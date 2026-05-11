@@ -1,0 +1,31 @@
+name: snake
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 每天 UTC 时间 0 点自动运行
+  workflow_dispatch:      # 允许你手动触发
+  push:
+    branches: ["main"]    # 当你推送到 main 分支时也会触发
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # 必须有写入权限才能推送文件
+    timeout-minutes: 5
+    steps:
+      - name: snake SVG
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+        outputs: |
+          dist/github-contribution-grid-snake.svg
+          dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+
+      - name: to 'output' branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
