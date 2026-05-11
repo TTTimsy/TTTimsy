@@ -253,10 +253,6 @@ async function main() {
   const outputs = [
     [`${username}-contribution-animation.svg`, lightSvg],
     [`${username}-contribution-animation-dark.svg`, darkSvg],
-    ['contribution-animation.svg', lightSvg],
-    ['contribution-animation-dark.svg', darkSvg],
-    ['github-contribution-animation.svg', lightSvg],
-    ['github-contribution-animation-dark.svg', darkSvg],
   ];
 
   outputs.forEach(([filename, content]) => {
