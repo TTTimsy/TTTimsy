@@ -106,7 +106,6 @@ const themes = {
     bullet: '#ffd966',
     explosion: '#f2b84b',
     sparkle: '#fff1a8',
-    text: '#8a6419',
   },
   dark: {
     empty: '#161b22',
@@ -115,7 +114,6 @@ const themes = {
     bullet: '#fff1a8',
     explosion: '#f7d774',
     sparkle: '#ffe898',
-    text: '#ffe898',
   },
 };
 
@@ -222,10 +220,7 @@ function buildAnimatedSvg({ data, themeName }) {
 <svg width="100%" viewBox="0 0 ${gridWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(username)} animated GitHub contribution graph">
   <title>${escapeXml(username)} contribution animation</title>
   <desc>Animated light-yellow contribution graph generated from public GitHub contribution data.</desc>
-  <style>
-    .label { font: 600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: ${theme.text}; }
-  </style>
-  <rect id="cycleTimer" x="-10" y="-10" width="1" height="1" fill="none">
+<rect id="cycleTimer" x="-10" y="-10" width="1" height="1" fill="none">
     <animate id="cycle" attributeName="x" from="-10" to="-9" begin="0s;cycle.end+1s" dur="${totalDuration}s" fill="freeze" />
   </rect>
   <g transform="translate(${gap}, ${gap})">
@@ -233,7 +228,7 @@ function buildAnimatedSvg({ data, themeName }) {
     <g opacity="0.94">
       <rect x="${shooterX - 18}" y="${shooterY - 8}" width="36" height="10" rx="5" fill="${theme.shooter}" />
       <polygon points="${shooterX - 7},${shooterY - 8} ${shooterX + 7},${shooterY - 8} ${shooterX},${shooterY - 23}" fill="${theme.shooter}" />
-      <text class="label" x="${shooterX}" y="${shooterY + 17}" text-anchor="middle">TTTimsy</text>
+
     </g>
     ${bullets}
     ${pops}
