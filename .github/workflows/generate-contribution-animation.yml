@@ -29,7 +29,7 @@ jobs:
       - name: Generate animated SVGs
         run: node scripts/generate-svg.cjs
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CONTRIBUTION_READ_TOKEN }}
           CONTRIBUTION_USERNAME: ${{ github.repository_owner }}
 
       - name: Commit and push updated SVGs

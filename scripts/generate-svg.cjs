@@ -219,7 +219,7 @@ function buildAnimatedSvg({ data, themeName }) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="100%" viewBox="0 0 ${gridWidth} ${viewHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(username)} animated GitHub contribution graph">
   <title>${escapeXml(username)} contribution animation</title>
-  <desc>Animated light-yellow contribution graph generated from public GitHub contribution data.</desc>
+  <desc>Animated light-yellow contribution graph generated from GitHub contribution data.</desc>
 <rect id="cycleTimer" x="-10" y="-10" width="1" height="1" fill="none">
     <animate id="cycle" attributeName="x" from="-10" to="-9" begin="0s;cycle.end+1s" dur="${totalDuration}s" fill="freeze" />
   </rect>
