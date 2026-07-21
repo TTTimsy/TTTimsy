@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const https = require('https');
+const path = require('path');
 
 const levelNumber = {
   NONE: 0,
@@ -13,36 +14,26 @@ const levelNumber = {
 
 const themes = {
   light: {
-    paper: '#f7f2e8',
-    paperShade: '#eadfcd',
-    empty: '#c7c6bd',
-    levels: ['#c7c6bd', '#9bb8aa', '#6f9a8d', '#c4a566', '#efe0a8'],
-    mountainFar: '#9bad9d',
-    mountainNear: '#5f786e',
-    mist: '#fffaf0',
-    river: '#9ec7c4',
-    riverLight: '#eaf8ec',
-    lamp: '#85aa98',
-    lampBright: '#f4e8ba',
-    lotus: '#d5b77d',
-    spirit: '#f7f1d4',
-    ink: '#44544e',
+    empty: '#d0d7de',
+    levels: ['#d0d7de', '#8fb7a4', '#4f927d', '#b88943', '#e7c96b'],
+    mountainFar: '#8d99a6',
+    mountainNear: '#596777',
+    cloud: '#eef3f6',
+    star: '#c79a4a',
+    jade: '#4f927d',
+    flame: '#e7c96b',
+    ink: '#374151',
   },
   dark: {
-    paper: '#111a27',
-    paperShade: '#182536',
-    empty: '#334353',
-    levels: ['#334353', '#47746d', '#5c9a88', '#b5965a', '#f0d99b'],
-    mountainFar: '#213d4b',
-    mountainNear: '#2f5b5d',
-    mist: '#9eb8c8',
-    river: '#467d82',
-    riverLight: '#b7e0d0',
-    lamp: '#73ad9d',
-    lampBright: '#f2dca0',
-    lotus: '#caa96d',
-    spirit: '#fbf0c8',
-    ink: '#c7d6d4',
+    empty: '#161b22',
+    levels: ['#161b22', '#245b56', '#2e8b78', '#b88335', '#f0cf72'],
+    mountainFar: '#172e48',
+    mountainNear: '#203b5b',
+    cloud: '#304967',
+    star: '#c89b48',
+    jade: '#65c6a8',
+    flame: '#f0cf72',
+    ink: '#9db8d2',
   },
 };
 
@@ -88,7 +79,7 @@ function requestContributionWeeks(login, token) {
           Accept: 'application/vnd.github.v4+json',
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
-          'User-Agent': 'tttimsy-spirit-vein-landscape',
+          'User-Agent': 'tttimsy-pixel-xianxia',
         },
       },
       (res) => {
@@ -147,126 +138,141 @@ function escapeXml(value) {
     .replace(/"/g, '&quot;');
 }
 
+function loadFlyingSwordDataUri() {
+  const spritePath = path.join(__dirname, '..', 'assets', 'pixel-xianxia-flying-sword.png');
+  return `data:image/png;base64,${fs.readFileSync(spritePath).toString('base64')}`;
+}
+
 function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
   const theme = themes[themeName];
-  const cell = 15;
+  if (!theme) {
+    throw new Error(`Unknown theme: ${themeName}`);
+  }
+
+  const cell = 14;
   const paddingX = 14;
-  const gridTop = 44;
+  const gridTop = 28;
   const gridHeight = 7 * cell;
   const gridWidth = Math.max(cell, data.length * cell);
   const width = gridWidth + paddingX * 2;
-  const riverY = gridTop + gridHeight + 31;
-  const height = riverY + 34;
+  const sceneBottom = gridTop + gridHeight + 50;
+  const height = sceneBottom + 4;
+  const daisX = paddingX + 11;
+  const daisY = sceneBottom - 11;
+  const maxSwordVisits = 72;
+  const flightDuration = 0.38;
   const activeDates = [];
-  const lamps = [];
+  const rectPixel = (x, y, pixelWidth, pixelHeight, fill, opacity = 1) =>
+    `<rect x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.round(pixelWidth)}" height="${Math.round(pixelHeight)}" fill="${fill}" opacity="${opacity}" />`;
 
+  const cells = [];
   data.forEach((week, weekIndex) => {
     week.forEach((day, dayIndex) => {
-      const cx = paddingX + weekIndex * cell + cell / 2;
-      const cy = gridTop + dayIndex * cell + cell / 2;
+      const x = paddingX + weekIndex * cell;
+      const y = gridTop + dayIndex * cell;
       const active = day.count > 0;
-      const fill = active ? theme.levels[day.level] || theme.lamp : theme.empty;
-      const radius = active ? 4.1 : 2.65;
-      const index = active && activeDates.length < 120 ? activeDates.length : -1;
+      const inset = active ? 1 : 4;
+      const size = active ? cell - 2 : cell - 8;
+      const fill = active ? theme.levels[day.level] || theme.jade : theme.empty;
+      const opacity = active ? '0.96' : '0.28';
 
-      if (index >= 0) {
-        activeDates.push({ cx, cy, date: day.date, count: day.count, level: day.level, index });
+      if (active && activeDates.length < maxSwordVisits) {
+        activeDates.push({
+          cx: x + cell / 2,
+          cy: y + cell / 2,
+          date: day.date,
+          count: day.count,
+          level: day.level,
+        });
       }
 
-      lamps.push(`
-      <g class="contribution-lamp">
-        <circle cx="${cx}" cy="${cy}" r="${radius + (active ? 1.8 : 0)}" fill="${active ? theme.lamp : theme.empty}" opacity="${active ? '0.18' : '0.28'}" />
-        <circle cx="${cx}" cy="${cy}" r="${radius}" fill="${fill}" stroke="${active ? theme.lampBright : theme.paperShade}" stroke-width="${active ? '0.8' : '0.45'}" opacity="${active ? '0.96' : '0.62'}">
-          <title>${escapeXml(`${day.date}: ${day.count} contributions`)}</title>
-        </circle>
-      </g>`);
+      cells.push(`
+      <rect x="${x + inset}" y="${y + inset}" width="${size}" height="${size}" fill="${fill}" opacity="${opacity}">
+        <title>${escapeXml(`${day.date}: ${day.count} contributions`)}</title>
+      </rect>`);
     });
   });
 
-  const stepDuration = 0.5;
-  const stepGap = 0.34;
-  const cycleDuration = Math.max(8, activeDates.length * stepGap + stepDuration + 1.2).toFixed(2);
-  const mountainBase = riverY + 5;
-  const farPeak = mountainBase - 58;
-  const nearPeak = mountainBase - 38;
-
-  const spiritSteps = activeDates
+  const mountainBlocks = [
+    [0, sceneBottom - 25, Math.max(28, Math.floor(width * 0.18)), 25, theme.mountainFar],
+    [Math.floor(width * 0.14), sceneBottom - 38, Math.max(35, Math.floor(width * 0.2)), 38, theme.mountainFar],
+    [Math.floor(width * 0.3), sceneBottom - 20, Math.max(42, Math.floor(width * 0.28)), 20, theme.mountainNear],
+    [Math.floor(width * 0.52), sceneBottom - 45, Math.max(40, Math.floor(width * 0.2)), 45, theme.mountainNear],
+    [Math.floor(width * 0.75), sceneBottom - 29, Math.max(30, width - Math.floor(width * 0.75)), 29, theme.mountainFar],
+  ];
+  const cloudBlocks = [
+    [paddingX + 4, 11, 27, 3],
+    [paddingX + 17, 8, 16, 3],
+    [Math.max(paddingX + 42, width - 82), 15, 34, 3],
+    [Math.max(paddingX + 54, width - 67), 12, 19, 3],
+  ];
+  const mountains = `<g id="pixel-mountains" opacity="0.8">${mountainBlocks
+    .map(([x, y, pixelWidth, pixelHeight, fill]) => rectPixel(x, y, pixelWidth, pixelHeight, fill))
+    .join('')}</g>`;
+  const cloudBanks = `<g id="pixel-cloud-banks" opacity="0.42">${cloudBlocks
+    .map(([x, y, pixelWidth, pixelHeight]) => rectPixel(x, y, pixelWidth, pixelHeight, theme.cloud))
+    .join('')}</g>`;
+  const swordDais = `<g id="sword-dais">${[
+    [daisX - 8, daisY + 5, 17, 3, theme.mountainNear],
+    [daisX - 4, daisY + 2, 9, 3, theme.ink],
+    [daisX - 1, daisY - 3, 3, 5, theme.jade],
+  ]
+    .map(([x, y, pixelWidth, pixelHeight, fill]) => rectPixel(x, y, pixelWidth, pixelHeight, fill))
+    .join('')}</g>`;
+  const swordDataUri = loadFlyingSwordDataUri();
+  const swordFlights = activeDates
     .map((target, index) => {
-      const begin = (index * stepGap).toFixed(2);
-      const sourceX = Math.max(paddingX + 3, target.cx - 25);
-      const sourceY = riverY - 3;
+      const source = index === 0 ? { cx: daisX, cy: daisY } : activeDates[index - 1];
+      const begin = index === 0 ? 'cycle.begin+0.18s' : `sword-flight-${index - 1}.end+0.14s`;
+      const flightId = `sword-flight-${index}`;
+      const flareId = `starfire-flare-${index}`;
+      const flarePixels = [
+        [target.cx - 1, target.cy - 5, 2, 3, theme.flame],
+        [target.cx + 3, target.cy - 1, 3, 2, theme.jade],
+        [target.cx - 5, target.cy - 1, 3, 2, theme.jade],
+        [target.cx - 1, target.cy + 3, 2, 3, theme.flame],
+        [target.cx - 1, target.cy - 1, 3, 3, theme.star],
+      ];
+
       return `
-      <g class="spirit-visit">
-        <circle cx="${sourceX}" cy="${sourceY}" r="2.8" fill="${theme.spirit}" opacity="0">
-          <set attributeName="opacity" to="1" begin="cycle.begin+${begin}s" />
-          <animate id="spirit-step-${index}" attributeName="cx" from="${sourceX}" to="${target.cx}" begin="cycle.begin+${begin}s" dur="${stepDuration}s" fill="freeze" />
-          <animate attributeName="cy" from="${sourceY}" to="${target.cy}" begin="cycle.begin+${begin}s" dur="${stepDuration}s" fill="freeze" />
-          <set attributeName="opacity" to="0" begin="spirit-step-${index}.end+0.08s" />
-        </circle>
-        <circle id="lotus-ripple-${index}" cx="${target.cx}" cy="${target.cy}" r="1.4" fill="none" stroke="${theme.lotus}" stroke-width="1.15" opacity="0">
-          <set attributeName="opacity" to="0.9" begin="spirit-step-${index}.end" />
-          <animate attributeName="r" values="1.4;7.2;9.4" begin="spirit-step-${index}.end" dur="0.72s" fill="freeze" />
-          <animate attributeName="opacity" values="0.9;0.35;0" begin="spirit-step-${index}.end" dur="0.72s" fill="freeze" />
-        </circle>
-        <g opacity="0">
-          <set attributeName="opacity" to="0.9" begin="spirit-step-${index}.end" />
-          <set attributeName="opacity" to="0" begin="spirit-step-${index}.end+0.62s" />
-          <ellipse cx="${target.cx}" cy="${target.cy - 4.2}" rx="1.8" ry="3.5" fill="${theme.lotus}" />
-          <ellipse cx="${target.cx + 4.2}" cy="${target.cy}" rx="3.5" ry="1.8" fill="${theme.lotus}" />
-          <ellipse cx="${target.cx}" cy="${target.cy + 4.2}" rx="1.8" ry="3.5" fill="${theme.lotus}" />
-          <ellipse cx="${target.cx - 4.2}" cy="${target.cy}" rx="3.5" ry="1.8" fill="${theme.lotus}" />
+      <g class="sword-flight" opacity="0">
+        <set attributeName="opacity" to="1" begin="${begin}" />
+        <set attributeName="opacity" to="0" begin="${flightId}.end+0.26s" />
+        <g>
+          <animateTransform id="${flightId}" attributeName="transform" type="translate" from="${source.cx} ${source.cy}" to="${target.cx} ${target.cy}" begin="${begin}" dur="${flightDuration}s" fill="freeze" />
+          ${rectPixel(-24, -3, 7, 2, theme.jade, 0.76)}
+          ${rectPixel(-18, 1, 5, 2, theme.flame, 0.84)}
+          ${rectPixel(-12, -1, 4, 2, theme.star, 0.92)}
+          <image class="flying-sword" href="${swordDataUri}" x="-18" y="-18" width="36" height="36" image-rendering="pixelated" />
         </g>
+      </g>
+      <g id="${flareId}" opacity="0">
+        <set attributeName="opacity" to="1" begin="${flightId}.end" />
+        <set attributeName="opacity" to="0" begin="${flightId}.end+0.32s" />
+        ${flarePixels
+          .map(([x, y, pixelWidth, pixelHeight, fill]) => rectPixel(x, y, pixelWidth, pixelHeight, fill))
+          .join('')}
       </g>`;
     })
     .join('');
+  const cycleDuration = Math.max(7, activeDates.length * (flightDuration + 0.14) + 1.8).toFixed(2);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(profileName)} spirit-vein contribution landscape">
-  <title>${escapeXml(profileName)} spirit-vein contribution landscape</title>
-  <desc>Animated Chinese-fantasy spirit-vein landscape based on GitHub contribution data.</desc>
-  <defs>
-    <linearGradient id="paper-gradient" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${theme.paper}" />
-      <stop offset="100%" stop-color="${theme.paperShade}" />
-    </linearGradient>
-    <linearGradient id="river-gradient" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="${theme.river}" stop-opacity="0.16" />
-      <stop offset="50%" stop-color="${theme.riverLight}" stop-opacity="0.78" />
-      <stop offset="100%" stop-color="${theme.river}" stop-opacity="0.16" />
-    </linearGradient>
-    <linearGradient id="mist-gradient" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="${theme.mist}" stop-opacity="0" />
-      <stop offset="50%" stop-color="${theme.mist}" stop-opacity="0.42" />
-      <stop offset="100%" stop-color="${theme.mist}" stop-opacity="0" />
-    </linearGradient>
-  </defs>
-  <rect width="${width}" height="${height}" fill="url(#paper-gradient)" rx="10" />
-  <rect id="cycleTimer" x="-10" y="-10" width="1" height="1" fill="none">
-    <animate id="cycle" attributeName="x" from="-10" to="-9" begin="0s;cycle.end+1.2s" dur="${cycleDuration}s" fill="freeze" />
+<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(profileName)} pixel xianxia contribution animation" shape-rendering="crispEdges">
+  <title>${escapeXml(profileName)} pixel xianxia contribution animation</title>
+  <desc>Animated pixel fantasy contribution calendar with a flying sword visiting active dates.</desc>
+  <rect id="cycle-timer" x="-1" y="-1" width="1" height="1" fill="none" opacity="0">
+    <animate id="cycle" attributeName="x" from="-1" to="0" begin="0s;cycle.end+1.2s" dur="${cycleDuration}s" fill="freeze" />
   </rect>
-  <g id="ink-mountains" opacity="0.34">
-    <path d="M0 ${mountainBase} C ${width * 0.11} ${farPeak}, ${width * 0.2} ${mountainBase - 23}, ${width * 0.32} ${farPeak + 7} C ${width * 0.48} ${mountainBase - 16}, ${width * 0.62} ${farPeak - 8}, ${width * 0.78} ${mountainBase - 22} C ${width * 0.88} ${farPeak + 12}, ${width * 0.95} ${mountainBase - 25}, ${width} ${farPeak + 4} L ${width} ${height} L 0 ${height} Z" fill="${theme.mountainFar}" />
-    <path d="M0 ${mountainBase + 9} C ${width * 0.14} ${nearPeak + 20}, ${width * 0.25} ${nearPeak - 6}, ${width * 0.4} ${mountainBase + 2} C ${width * 0.54} ${nearPeak + 8}, ${width * 0.7} ${nearPeak - 13}, ${width * 0.86} ${mountainBase + 5} C ${width * 0.94} ${nearPeak - 5}, ${width * 0.98} ${nearPeak + 12}, ${width} ${nearPeak + 4} L ${width} ${height} L 0 ${height} Z" fill="${theme.mountainNear}" />
-    <path d="M0 ${mountainBase + 17} C ${width * 0.18} ${mountainBase - 4}, ${width * 0.34} ${mountainBase + 9}, ${width * 0.52} ${mountainBase - 1} C ${width * 0.67} ${mountainBase + 13}, ${width * 0.84} ${mountainBase - 6}, ${width} ${mountainBase + 10} L ${width} ${height} L 0 ${height} Z" fill="${theme.mountainNear}" opacity="0.58" />
+  ${cloudBanks}
+  ${mountains}
+  <g id="contribution-starfire">
+    ${cells.join('')}
   </g>
-  <g id="spirit-river">
-    <path d="M0 ${riverY} C ${width * 0.22} ${riverY - 7}, ${width * 0.39} ${riverY + 8}, ${width * 0.58} ${riverY - 3} C ${width * 0.76} ${riverY - 11}, ${width * 0.9} ${riverY + 5}, ${width} ${riverY - 2}" fill="none" stroke="${theme.river}" stroke-width="3.2" stroke-linecap="round" opacity="0.68" />
-    <path d="M0 ${riverY} C ${width * 0.22} ${riverY - 7}, ${width * 0.39} ${riverY + 8}, ${width * 0.58} ${riverY - 3} C ${width * 0.76} ${riverY - 11}, ${width * 0.9} ${riverY + 5}, ${width} ${riverY - 2}" fill="none" stroke="url(#river-gradient)" stroke-width="1.4" stroke-linecap="round" stroke-dasharray="32 180">
-      <animate attributeName="stroke-dashoffset" values="220;0" dur="8s" repeatCount="indefinite" />
-    </path>
+  ${swordDais}
+  <g id="sword-flights">
+    ${swordFlights}
   </g>
-  <g id="contribution-lamps">
-    ${lamps.join('')}
-  </g>
-  <g id="spirit-light">
-    ${spiritSteps}
-  </g>
-  <g id="drifting-mist" opacity="0.5">
-    <path d="M${width * 0.04} ${gridTop - 13} C ${width * 0.22} ${gridTop - 26}, ${width * 0.36} ${gridTop - 2}, ${width * 0.56} ${gridTop - 14} C ${width * 0.72} ${gridTop - 25}, ${width * 0.86} ${gridTop - 6}, ${width * 0.98} ${gridTop - 16}" fill="none" stroke="url(#mist-gradient)" stroke-width="11" stroke-linecap="round">
-      <animateTransform attributeName="transform" type="translate" values="-18 0;18 0;-18 0" dur="18s" repeatCount="indefinite" />
-    </path>
-  </g>
-  <text x="${paddingX}" y="${height - 11}" fill="${theme.ink}" font-size="8" letter-spacing="2" opacity="0.78">灵 脉 · CONTRIBUTIONS</text>
 </svg>
 `;
 }
@@ -285,7 +291,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Generating spirit-vein landscape for ${username}`);
+  console.log(`Generating pixel xianxia contribution animation for ${username}`);
   const weeks = await requestContributionWeeks(username, githubToken);
   const data = normalizeWeeks(weeks);
 
