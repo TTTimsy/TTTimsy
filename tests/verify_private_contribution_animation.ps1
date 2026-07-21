@@ -13,19 +13,27 @@ if ($generator -match 'generated from public GitHub contribution data') {
   throw 'The SVG description still claims the contribution data is public only.'
 }
 
-if ($generator -notmatch 'id="ink-mountains"') {
-  throw 'The spirit-vein mountain layer is missing.'
+if ($generator -notmatch 'id="pixel-mountains"') {
+  throw 'The pixel mountain layer is missing.'
 }
 
-if ($generator -notmatch 'id="spirit-river"') {
-  throw 'The spirit-vein river layer is missing.'
+if ($generator -notmatch 'id="sword-dais"') {
+  throw 'The sword dais layer is missing.'
 }
 
-if ($generator -notmatch 'id="spirit-step-') {
-  throw 'The sequential spirit-light animation is missing.'
+if ($generator -notmatch 'sword-flight-\$\{index\}') {
+  throw 'The sequential flying-sword animation is missing.'
 }
 
-if ($generator -match 'shooter|bullet|explosion') {
+if ($generator -notmatch 'data:image/png;base64') {
+  throw 'The flying-sword sprite is not embedded in the generated SVG.'
+}
+
+if ($generator -match '[\u3400-\u9FFF]') {
+  throw 'Visible Chinese characters remain in the animation generator.'
+}
+
+if ($generator -match 'shooter|launcher|bullet|bubble|explosion') {
   throw 'Bubble-shooter artwork remains in the generator.'
 }
 

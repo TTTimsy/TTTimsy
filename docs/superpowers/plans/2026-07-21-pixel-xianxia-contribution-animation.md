@@ -195,7 +195,7 @@ Leave both `CONTRIBUTION_READ_TOKEN` workflow assertions untouched. Replace the 
 ```powershell
 if ($generator -notmatch 'id="pixel-mountains"') { throw 'The pixel mountain layer is missing.' }
 if ($generator -notmatch 'id="sword-dais"') { throw 'The sword dais layer is missing.' }
-if ($generator -notmatch 'id="sword-flight-') { throw 'The sequential flying-sword animation is missing.' }
+if ($generator -notmatch 'sword-flight-\$\{index\}') { throw 'The sequential flying-sword animation is missing.' }
 if ($generator -notmatch 'data:image/png;base64') { throw 'The flying-sword sprite is not embedded in the generated SVG.' }
 if ($generator -match '[\u3400-\u9FFF]') { throw 'Visible Chinese characters remain in the animation generator.' }
 if ($generator -match 'shooter|launcher|bullet|bubble|explosion') { throw 'Bubble-shooter artwork remains in the generator.' }
@@ -206,7 +206,7 @@ if ($generator -match 'shooter|launcher|bullet|bubble|explosion') { throw 'Bubbl
 ```powershell
 Remove-Item -LiteralPath tests/verify_spirit_vein_animation.cjs
 node tests/verify_pixel_xianxia_animation.cjs
-powershell -ExecutionPolicy Bypass -File tests/verify_private_contribution_animation.ps1
+& (Join-Path $PSHOME 'pwsh.exe') -ExecutionPolicy Bypass -File tests/verify_private_contribution_animation.ps1
 git add -- tests/verify_private_contribution_animation.ps1
 git rm -- tests/verify_spirit_vein_animation.cjs
 git commit -m "test: guard pixel xianxia contribution animation"
@@ -228,7 +228,7 @@ git diff --check HEAD~4..HEAD
 git status --short
 node --check scripts/generate-spirit-vein-svg.cjs
 node tests/verify_pixel_xianxia_animation.cjs
-powershell -ExecutionPolicy Bypass -File tests/verify_private_contribution_animation.ps1
+& (Join-Path $PSHOME 'pwsh.exe') -ExecutionPolicy Bypass -File tests/verify_private_contribution_animation.ps1
 ```
 
 Expected: no diff-check output, a clean working tree, and both success messages.
