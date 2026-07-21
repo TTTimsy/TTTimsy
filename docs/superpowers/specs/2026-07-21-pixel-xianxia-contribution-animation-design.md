@@ -80,3 +80,19 @@ visible and retain exact titles.
 3. Generate the sprite with the built-in image tool, chroma-key it to alpha,
    validate dimensions and alpha bounds, and add it to the repository.
 4. Update the generator and verify it with `node --check`, the new regression
+   test, the existing private-contribution guard, and deterministic sample
+   generation. Regenerate both committed SVGs and inspect their structure.
+5. Run the animation-refresh workflow manually after the code is on GitHub and
+   verify the public profile README renders both the selected colour scheme and
+   the private-contribution count without an external image dependency.
+
+## Scope
+
+This change replaces only the contribution animation art and its generator
+test coverage. It does not change GitHub account privacy settings, commit-email
+configuration, contribution-counting behaviour, repository visibility, the
+profile README layout, or the workflow's data-fetch contract.
+
+The checked-in sprite is intentional source material, not a temporary image.
+No generated previews, chroma-key intermediates, or local build artefacts are
+kept in the repository.
