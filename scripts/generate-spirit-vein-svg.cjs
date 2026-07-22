@@ -194,30 +194,30 @@ function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
   return `<g id="pixel-far-ridges">${ridgeBlocks.join('')}</g>`;
 }
 
-function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
+function buildFrameRidges({ width, gridBottom, sceneBottom, theme }) {
   const frameBlocks = [
     ...steppedPeak({
       apexX: Math.round(width * 0.11),
-      apexY: gridTop + 12,
+      apexY: gridBottom + 10,
       baseY: sceneBottom,
-      halfWidth: Math.round(width * 0.14),
+      halfWidth: Math.round(width * 0.12),
       fill: theme.nearRock,
       capFill: theme.ridgeEdge,
       depthFill: theme.ridgeShadow,
       opacity: 1,
     }),
     ...steppedPeak({
-      apexX: Math.round(width * 0.91),
-      apexY: gridTop + 18,
+      apexX: Math.round(width * 0.89),
+      apexY: gridBottom + 10,
       baseY: sceneBottom,
-      halfWidth: Math.round(width * 0.15),
+      halfWidth: Math.round(width * 0.12),
       fill: theme.nearRock,
       capFill: theme.ridgeEdge,
       depthFill: theme.ridgeShadow,
       opacity: 1,
     }),
-    rectPixel(0, sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 1),
-    rectPixel(Math.round(width * 0.79), sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 1),
+    rectPixel(0, sceneBottom - 10, Math.round(width * 0.18), 8, theme.ridgeShadow, 1),
+    rectPixel(Math.round(width * 0.82), sceneBottom - 10, Math.round(width * 0.18), 8, theme.ridgeShadow, 1),
   ];
 
   return `<g id="pixel-frame-ridges">${frameBlocks.join('')}</g>`;
@@ -288,6 +288,26 @@ function resolveSpiritTier(day) {
 }
 
 const veinShapeNames = ['', 'sprout', 'seam', 'lode', 'geode'];
+
+function buildContributionShrine({ gridWidth, rowCount, cell, paddingX, gridTop, theme }) {
+  const left = Math.max(0, paddingX - 6);
+  const right = paddingX + gridWidth + 6;
+  const top = Math.max(2, gridTop - 8);
+  const bottom = gridTop + rowCount * cell + 4;
+  const frameWidth = right - left;
+  const blocks = [
+    rectPixel(left + 4, top, frameWidth - 8, 4, theme.ridgeShadow, 1),
+    rectPixel(left + 8, top + 4, frameWidth - 16, 2, theme.skyMoon, 1),
+    rectPixel(left + 4, bottom - 6, frameWidth - 8, 6, theme.ridgeShadow, 1),
+    rectPixel(left + 8, bottom - 6, frameWidth - 16, 2, theme.skyMoon, 1),
+    rectPixel(left, top + 4, 6, 8, theme.ridgeShadow, 1),
+    rectPixel(right - 6, top + 4, 6, 8, theme.ridgeShadow, 1),
+    rectPixel(left, bottom - 10, 6, 10, theme.ridgeShadow, 1),
+    rectPixel(right - 6, bottom - 10, 6, 10, theme.ridgeShadow, 1),
+  ];
+
+  return `<g id="contribution-shrine">${blocks.join('')}</g>`;
+}
 
 function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) {
   const activeDates = [];
@@ -400,6 +420,8 @@ function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
   const paddingX = 14;
   const gridTop = 26;
   const gridWidth = Math.max(cell, data.length * cell);
+  const rowCount = Math.max(1, ...data.map((week) => week.length));
+  const gridBottom = gridTop + rowCount * cell;
   const width = Math.max(280, gridWidth + paddingX * 2);
   const height = 178;
   const sceneBottom = height - 6;
@@ -415,10 +437,11 @@ function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
   </rect>
   ${buildSkyCurrents({ width, theme })}
   ${buildStarfire({ width, theme })}
-  ${buildFarRidges({ width, horizonY: gridTop + 64, sceneBottom, theme })}
-  ${buildFrameRidges({ width, gridTop, sceneBottom, theme })}
+  ${buildFarRidges({ width, horizonY: gridBottom + 4, sceneBottom, theme })}
+  ${buildFrameRidges({ width, gridBottom, sceneBottom, theme })}
   ${buildRiverValley({ width, sceneBottom, theme })}
   ${buildMistBanks({ width, gridTop, sceneBottom, theme })}
+  ${buildContributionShrine({ gridWidth, rowCount, cell, paddingX, gridTop, theme })}
   ${contributionScene.markup}
   ${smokeScene.markup}
 </svg>

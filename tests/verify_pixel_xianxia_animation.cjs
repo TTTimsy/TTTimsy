@@ -35,12 +35,26 @@ assert.match(svg, /id="pixel-far-ridges"/);
 assert.match(svg, /id="pixel-frame-ridges"/);
 assert.match(svg, /id="pixel-river-valley"/);
 assert.match(svg, /id="pixel-mist-banks"/);
+assert.match(svg, /id="contribution-shrine"/);
 assert.match(svg, /id="contribution-spirit-vein"/);
 assert.match(svg, /id="spirit-smoke-actors"/);
 assert.match(svg, /id="smoke-actor-0"/);
 assert.match(svg, /2026-01-02: 2 contributions/);
 assert.match(svg, /2026-01-04: 5 contributions/);
 assert.match(svg, /2026-01-06: 1 contributions/);
+const shrineIndex = svg.indexOf('id="contribution-shrine"');
+const terrainIndex = svg.indexOf('id="pixel-mist-banks"');
+const contributionIndex = svg.indexOf('id="contribution-spirit-vein"');
+assert.ok(terrainIndex < shrineIndex, 'the shrine must sit above the terrain');
+assert.ok(shrineIndex < contributionIndex, 'contribution cells must sit above the shrine');
+
+const shrineRects = [...groupContent(svg, 'contribution-shrine').matchAll(/<rect\b[^>]*\/>/g)]
+  .map(([tag]) => tag);
+assert.equal(shrineRects.length, 8, 'the shrine should have only lintel, plinth, and four piers');
+assert.ok(
+  shrineRects.every((tag) => rectDimension(tag, 'height') <= 10),
+  'the shrine must remain an open frame rather than a filled calendar panel'
+);
 const actorMatch = svg.match(/<g id="smoke-actor-0" data-source-date="([^"]+)" data-destination-date="([^"]+)"/);
 assert.ok(actorMatch, 'the first smoke actor must expose its source and destination dates');
 assert.notEqual(actorMatch[1], actorMatch[2], 'smoke must reassemble at a different active date');

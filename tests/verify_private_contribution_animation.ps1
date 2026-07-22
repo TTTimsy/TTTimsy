@@ -29,6 +29,10 @@ if ($generator -notmatch 'id="contribution-spirit-vein"') {
   throw 'The contribution spirit-vein layer is missing.'
 }
 
+if ($generator -notmatch 'id="contribution-shrine"') {
+  throw 'The contribution shrine layer is missing.'
+}
+
 if ($generator -notmatch 'id="spirit-smoke-actors"') {
   throw 'The drifting spirit-smoke layer is missing.'
 }
