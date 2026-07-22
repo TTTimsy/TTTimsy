@@ -16,6 +16,7 @@ const data = [
 ];
 
 const svg = buildAnimatedSvg({ data, themeName: 'dark', profileName: 'Timsy' });
+const lightSvg = buildAnimatedSvg({ data, themeName: 'light', profileName: 'Timsy' });
 
 function groupContent(markup, id) {
   const match = markup.match(new RegExp(`<g id="${id}">([\\s\\S]*?)</g>`));
@@ -89,9 +90,16 @@ assert.equal((denseSvg.match(/class="smoke-micro-pixel"/g) || []).length, 88, 'd
 
 assert.equal((svg.match(/class="sky-current"/g) || []).length, 2, 'the sky should have two connected current masses');
 assert.equal((svg.match(/class="star-whorl"/g) || []).length, 3, 'the sky should have three connected star whorls');
-assert.match(groupContent(svg, 'pixel-far-ridges'), /fill="#254a8d" opacity="1"/);
-assert.match(groupContent(svg, 'pixel-frame-ridges'), /fill="#166c83" opacity="1"/);
-assert.match(groupContent(svg, 'pixel-river-valley'), /fill="#1266a8" opacity="1"/);
+assert.match(groupContent(svg, 'contribution-shrine'), /fill="#061a39" opacity="1"/);
+assert.match(groupContent(svg, 'pixel-far-ridges'), /fill="#214889" opacity="1"/);
+assert.match(groupContent(svg, 'pixel-frame-ridges'), /fill="#0a788b" opacity="1"/);
+assert.match(groupContent(svg, 'pixel-river-valley'), /fill="#1666a7" opacity="1"/);
+assert.match(groupContent(lightSvg, 'contribution-shrine'), /fill="#0f3b68" opacity="1"/);
+assert.match(groupContent(lightSvg, 'pixel-far-ridges'), /fill="#4264a8" opacity="1"/);
+assert.match(groupContent(lightSvg, 'pixel-frame-ridges'), /fill="#14899a" opacity="1"/);
+assert.match(groupContent(lightSvg, 'pixel-river-valley'), /fill="#438cc7" opacity="1"/);
+assert.doesNotMatch(groupContent(svg, 'pixel-river-valley'), /#ffd166/);
+assert.doesNotMatch(groupContent(svg, 'contribution-shrine'), /#ffd166/);
 
 const staticRects = [...svg.matchAll(/<rect\b[^>]*\/>/g)]
   .map(([tag]) => tag)
