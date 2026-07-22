@@ -101,12 +101,26 @@ assert.match(groupContent(lightSvg, 'pixel-river-valley'), /fill="#438cc7" opaci
 assert.doesNotMatch(groupContent(svg, 'pixel-river-valley'), /#ffd166/);
 assert.doesNotMatch(groupContent(svg, 'contribution-shrine'), /#ffd166/);
 
-const staticRects = [...svg.matchAll(/<rect\b[^>]*\/>/g)]
+const visibleRects = [...svg.matchAll(/<rect\b[^>]*\/>/g)]
   .map(([tag]) => tag)
-  .filter((tag) => !tag.includes('cycle-timer') && !tag.includes('smoke-micro-pixel'));
+  .filter((tag) => !tag.includes('cycle-timer'));
 assert.ok(
-  staticRects.every((tag) => rectDimension(tag, 'width') >= 2 && rectDimension(tag, 'height') >= 2),
-  'static layers must not contain isolated one-pixel blocks'
+  visibleRects.every((tag) => rectDimension(tag, 'width') >= 2 && rectDimension(tag, 'height') >= 2),
+  'visible layers must not contain one-pixel blocks'
+);
+assert.ok(
+  visibleRects.every((tag) => rectDimension(tag, 'width') % 2 === 0 && rectDimension(tag, 'height') % 2 === 0),
+  'every visible tile must use the two-pixel material grammar'
+);
+assert.ok(
+  visibleRects.every((tag) => tag.includes('opacity="1"')),
+  'every visible tile must remain opaque'
+);
+
+const smokeRectTags = visibleRects.filter((tag) => tag.includes('smoke-micro-pixel'));
+assert.ok(
+  smokeRectTags.every((tag) => rectDimension(tag, 'width') === 2 && rectDimension(tag, 'height') === 2),
+  'smoke should be connected two-pixel energy tiles rather than micro-noise'
 );
 
 const shapeSvg = buildAnimatedSvg({
@@ -123,5 +137,13 @@ assert.match(shapeSvg, /data-level="1" data-vein-shape="sprout"/);
 assert.match(shapeSvg, /data-level="2" data-vein-shape="seam"/);
 assert.match(shapeSvg, /data-level="3" data-vein-shape="lode"/);
 assert.match(shapeSvg, /data-level="4" data-vein-shape="geode"/);
+
+const lodeCell = shapeSvg.match(/<g class="spirit-vein-cell"[^>]*data-vein-shape="lode"[^>]*>([\s\S]*?)<\/g>/);
+assert.ok(lodeCell, 'the lode fixture must be present');
+assert.match(lodeCell[1], /width="4" height="2" fill="#d9f6b8" opacity="1"/);
+assert.doesNotMatch(lodeCell[1], /width="3"|height="3"/);
+
+const goldTags = svg.match(/<rect[^>]*fill="#ffd166"[^>]*\/>/g) || [];
+assert.equal(goldTags.length, 4, 'gold should appear only in three star cores and the single geode cap');
 
 console.log('Terraria spirit-vein SVG checks passed.');

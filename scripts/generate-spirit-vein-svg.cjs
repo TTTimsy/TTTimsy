@@ -155,17 +155,21 @@ function rectPixel(x, y, width, height, fill, opacity = 1, extra = '') {
   return `<rect x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.round(width)}" height="${Math.round(height)}" fill="${fill}" opacity="${opacity}"${extra} />`;
 }
 
+function evenTile(value, minimum = 2) {
+  return Math.max(minimum, Math.round(value / 2) * 2);
+}
+
 function steppedPeak({ apexX, apexY, baseY, halfWidth, fill, capFill, depthFill, opacity = 1 }) {
   const blocks = [];
   const height = Math.max(1, baseY - apexY);
 
   for (let y = apexY, row = 0; y < baseY; y += 6, row += 1) {
     const progress = (y - apexY) / height;
-    const currentHalf = Math.max(8, Math.round(halfWidth * (0.24 + progress * 0.76)));
+    const currentHalf = Math.max(8, evenTile(halfWidth * (0.24 + progress * 0.76)));
     blocks.push(rectPixel(apexX - currentHalf, y, currentHalf * 2, 6, fill, opacity));
 
     if (capFill && row % 2 === 1) {
-      const capWidth = Math.max(10, Math.round(currentHalf * 0.42));
+      const capWidth = Math.max(10, evenTile(currentHalf * 0.42));
       blocks.push(rectPixel(apexX - currentHalf, y, capWidth, 2, capFill, 1));
     }
     if (depthFill && row % 2 === 0) {
@@ -216,8 +220,8 @@ function buildFrameRidges({ width, gridBottom, sceneBottom, theme }) {
       depthFill: theme.ridgeShadow,
       opacity: 1,
     }),
-    rectPixel(0, sceneBottom - 10, Math.round(width * 0.18), 8, theme.ridgeShadow, 1),
-    rectPixel(Math.round(width * 0.82), sceneBottom - 10, Math.round(width * 0.18), 8, theme.ridgeShadow, 1),
+    rectPixel(0, sceneBottom - 10, evenTile(width * 0.18), 8, theme.ridgeShadow, 1),
+    rectPixel(Math.round(width * 0.82), sceneBottom - 10, evenTile(width * 0.18), 8, theme.ridgeShadow, 1),
   ];
 
   return `<g id="pixel-frame-ridges">${frameBlocks.join('')}</g>`;
@@ -226,9 +230,9 @@ function buildFrameRidges({ width, gridBottom, sceneBottom, theme }) {
 function buildRiverValley({ width, sceneBottom, theme }) {
   const riverTop = sceneBottom - 31;
   const riverBlocks = [
-    rectPixel(Math.round(width * 0.17), riverTop, Math.round(width * 0.65), 6, theme.riverDeep, 1),
-    rectPixel(Math.round(width * 0.23), riverTop + 6, Math.round(width * 0.54), 6, theme.riverShadow, 1),
-    rectPixel(Math.round(width * 0.31), riverTop + 12, Math.round(width * 0.38), 6, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.17), riverTop, evenTile(width * 0.65), 6, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.23), riverTop + 6, evenTile(width * 0.54), 6, theme.riverShadow, 1),
+    rectPixel(Math.round(width * 0.31), riverTop + 12, evenTile(width * 0.38), 6, theme.riverDeep, 1),
     rectPixel(Math.round(width * 0.28), riverTop + 2, 18, 4, theme.riverGlint, 1),
     rectPixel(Math.round(width * 0.48), riverTop + 8, 26, 4, theme.riverGlint, 1),
     rectPixel(Math.round(width * 0.57), riverTop + 14, 20, 4, theme.riverGlint, 1),
@@ -269,10 +273,10 @@ function buildSkyCurrents({ width, theme }) {
 function buildStarfire({ width, theme }) {
   const whorl = (x, y) => `<g class="star-whorl">${[
     rectPixel(x, y, 4, 4, theme.starfire, 1),
-    rectPixel(x - 2, y, 2, 2, theme.skyMoon, 1),
-    rectPixel(x + 4, y + 2, 2, 2, theme.skyMoon, 1),
-    rectPixel(x, y - 2, 2, 2, theme.skyMoon, 1),
+    rectPixel(x, y - 2, 4, 2, theme.skyMoon, 1),
+    rectPixel(x + 4, y, 2, 4, theme.skyMoon, 1),
     rectPixel(x + 2, y + 4, 2, 2, theme.skyMoon, 1),
+    rectPixel(x - 2, y + 2, 2, 2, theme.skyMoon, 1),
   ].join('')}</g>`;
 
   return `<g id="pixel-starfire">${[
@@ -351,7 +355,7 @@ function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) 
         3: [
           rectPixel(coreX, coreY, 8, 4, theme.jadeCore, 1),
           rectPixel(coreX + 2, coreY - 2, 4, 2, theme.jadeBright, 1),
-          rectPixel(coreX + 2, coreY + 4, 3, 3, theme.jadeBright, 1),
+          rectPixel(coreX + 2, coreY + 4, 4, 2, theme.jadeBright, 1),
         ],
         4: [
           rectPixel(coreX, coreY, 10, 6, theme.jadeCore, 1),
@@ -376,10 +380,10 @@ function buildSpiritSmoke({ activeDates, theme }) {
   const actorDuration = 2.05;
   const cycleDuration = Math.max(7.8, actorCount * 0.28 + 3.3).toFixed(2);
   const smokePixels = [
-    [-5, 1, 2, 1, theme.jadeDim, 1], [-3, -2, 1, 3, theme.jadeCore, 1],
-    [-1, 2, 2, 2, theme.jadeBright, 1], [1, -4, 1, 2, theme.jadeDim, 1],
-    [3, -1, 2, 1, theme.jadeCore, 1], [4, 2, 1, 2, theme.jadeBright, 1],
-    [0, -6, 1, 1, theme.jadeBright, 1], [-6, -2, 1, 1, theme.jadeDim, 1],
+    [-4, 0, 2, 2, theme.jadeDim, 1], [-2, 0, 2, 2, theme.jadeCore, 1],
+    [-2, -2, 2, 2, theme.jadeBright, 1], [0, -2, 2, 2, theme.jadeDim, 1],
+    [0, -4, 2, 2, theme.jadeCore, 1], [2, -4, 2, 2, theme.jadeBright, 1],
+    [2, -6, 2, 2, theme.jadeDim, 1], [4, -6, 2, 2, theme.jadeCore, 1],
   ];
 
   const actors = Array.from({ length: actorCount }, (_, index) => {
