@@ -13,20 +13,28 @@ if ($generator -match 'generated from public GitHub contribution data') {
   throw 'The SVG description still claims the contribution data is public only.'
 }
 
-if ($generator -notmatch 'id="pixel-mountains"') {
-  throw 'The pixel mountain layer is missing.'
+if ($generator -notmatch 'id="pixel-far-ridges"') {
+  throw 'The far pixel ridge layer is missing.'
 }
 
-if ($generator -notmatch 'id="sword-dais"') {
-  throw 'The sword dais layer is missing.'
+if ($generator -notmatch 'id="pixel-frame-ridges"') {
+  throw 'The frame pixel ridge layer is missing.'
 }
 
-if ($generator -notmatch 'sword-flight-\$\{index\}') {
-  throw 'The sequential flying-sword animation is missing.'
+if ($generator -notmatch 'id="pixel-river-valley"') {
+  throw 'The pixel river valley layer is missing.'
 }
 
-if ($generator -notmatch 'data:image/png;base64') {
-  throw 'The flying-sword sprite is not embedded in the generated SVG.'
+if ($generator -notmatch 'id="contribution-spirit-vein"') {
+  throw 'The contribution spirit-vein layer is missing.'
+}
+
+if ($generator -notmatch 'id="spirit-smoke-actors"') {
+  throw 'The drifting spirit-smoke layer is missing.'
+}
+
+if ($generator -match 'loadFlyingSwordDataUri|data:image/png;base64|sword-dais|sword-flight|flying-sword') {
+  throw 'Flying-sword artwork remains in the generator.'
 }
 
 if ($generator -match '[\u3400-\u9FFF]') {
