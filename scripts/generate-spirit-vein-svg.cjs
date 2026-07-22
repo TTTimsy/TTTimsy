@@ -13,32 +13,36 @@ const levelNumber = {
 
 const themes = {
   light: {
-    inactiveStone: '#7b8793',
-    farRock: '#a9b4bd',
-    nearRock: '#687988',
-    ridgeShadow: '#435564',
-    riverShadow: '#93b3bd',
-    riverGlint: '#e1f0ec',
-    mist: '#d6e4e3',
-    jadeDim: '#5c937f',
-    jadeCore: '#2e7764',
-    jadeBright: '#c9e7ac',
-    starfire: '#bc8d3f',
-    ink: '#354754',
+    inactiveStone: '#71818a',
+    farRock: '#7895a0',
+    nearRock: '#4d6f7b',
+    ridgeShadow: '#294350',
+    ridgeEdge: '#bddbd2',
+    riverDeep: '#4b8797',
+    riverShadow: '#74aebe',
+    riverGlint: '#d5f4e9',
+    mist: '#b8d9d7',
+    jadeDim: '#347b68',
+    jadeCore: '#168d6b',
+    jadeBright: '#e4f3bd',
+    starfire: '#d7a83d',
+    ink: '#29434c',
   },
   dark: {
-    inactiveStone: '#2b3a48',
-    farRock: '#172a42',
-    nearRock: '#233b50',
-    ridgeShadow: '#101f30',
-    riverShadow: '#17394b',
-    riverGlint: '#4d8791',
-    mist: '#36566a',
-    jadeDim: '#246b62',
-    jadeCore: '#4aaa89',
-    jadeBright: '#c9e7ae',
-    starfire: '#dfbd62',
-    ink: '#9ab6c2',
+    inactiveStone: '#405965',
+    farRock: '#18324b',
+    nearRock: '#274d65',
+    ridgeShadow: '#0a1d2d',
+    ridgeEdge: '#77a4af',
+    riverDeep: '#0a2d40',
+    riverShadow: '#15566a',
+    riverGlint: '#b9f1e3',
+    mist: '#79aebb',
+    jadeDim: '#1d725f',
+    jadeCore: '#2caa82',
+    jadeBright: '#e6f6b8',
+    starfire: '#f8d888',
+    ink: '#c0e1e0',
   },
 };
 
@@ -147,18 +151,22 @@ function rectPixel(x, y, width, height, fill, opacity = 1, extra = '') {
   return `<rect x="${Math.round(x)}" y="${Math.round(y)}" width="${Math.round(width)}" height="${Math.round(height)}" fill="${fill}" opacity="${opacity}"${extra} />`;
 }
 
-function steppedPeak({ apexX, apexY, baseY, halfWidth, fill, capFill, opacity = 1 }) {
+function steppedPeak({ apexX, apexY, baseY, halfWidth, fill, capFill, depthFill, opacity = 1 }) {
   const blocks = [];
   const height = Math.max(1, baseY - apexY);
 
-  for (let y = apexY, row = 0; y < baseY; y += 3, row += 1) {
+  for (let y = apexY, row = 0; y < baseY; y += 4, row += 1) {
     const progress = (y - apexY) / height;
     const currentHalf = Math.max(2, Math.round(halfWidth * (0.12 + progress * 0.88)));
-    blocks.push(rectPixel(apexX - currentHalf, y, currentHalf * 2, 3, fill, opacity));
+    blocks.push(rectPixel(apexX - currentHalf, y, currentHalf * 2, 4, fill, opacity));
 
-    if (capFill && row % 4 === 1) {
-      const capWidth = Math.max(2, Math.round(currentHalf * 0.32));
-      blocks.push(rectPixel(apexX - currentHalf, y, capWidth, 1, capFill, opacity * 0.72));
+    if (capFill && row % 3 === 1) {
+      const capWidth = Math.max(2, Math.round(currentHalf * 0.38));
+      blocks.push(rectPixel(apexX - currentHalf, y, capWidth, 1, capFill, 1));
+    }
+    if (depthFill && row % 2 === 0) {
+      const shadowWidth = Math.max(3, Math.round(currentHalf * 0.72));
+      blocks.push(rectPixel(apexX + currentHalf - shadowWidth, y + 3, shadowWidth, 1, depthFill, 1));
     }
   }
 
@@ -173,8 +181,9 @@ function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
       baseY: sceneBottom - 6,
       halfWidth: Math.round(width * 0.18),
       fill: theme.farRock,
-      capFill: theme.ink,
-      opacity: 0.63,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
     ...steppedPeak({
       apexX: Math.round(width * 0.39),
@@ -182,8 +191,9 @@ function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
       baseY: sceneBottom - 7,
       halfWidth: Math.round(width * 0.15),
       fill: theme.farRock,
-      capFill: theme.ink,
-      opacity: 0.54,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
     ...steppedPeak({
       apexX: Math.round(width * 0.67),
@@ -191,8 +201,9 @@ function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
       baseY: sceneBottom - 5,
       halfWidth: Math.round(width * 0.16),
       fill: theme.farRock,
-      capFill: theme.ink,
-      opacity: 0.58,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
     ...steppedPeak({
       apexX: Math.round(width * 0.89),
@@ -200,8 +211,9 @@ function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
       baseY: sceneBottom - 5,
       halfWidth: Math.round(width * 0.2),
       fill: theme.farRock,
-      capFill: theme.ink,
-      opacity: 0.66,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
   ];
 
@@ -216,8 +228,9 @@ function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
       baseY: sceneBottom,
       halfWidth: Math.round(width * 0.14),
       fill: theme.nearRock,
-      capFill: theme.ridgeShadow,
-      opacity: 0.76,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
     ...steppedPeak({
       apexX: Math.round(width * 0.91),
@@ -225,11 +238,12 @@ function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
       baseY: sceneBottom,
       halfWidth: Math.round(width * 0.15),
       fill: theme.nearRock,
-      capFill: theme.ridgeShadow,
-      opacity: 0.8,
+      capFill: theme.ridgeEdge,
+      depthFill: theme.ridgeShadow,
+      opacity: 1,
     }),
-    rectPixel(0, sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 0.78),
-    rectPixel(Math.round(width * 0.79), sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 0.78),
+    rectPixel(0, sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 1),
+    rectPixel(Math.round(width * 0.79), sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 1),
   ];
 
   const treeBases = [
@@ -240,9 +254,9 @@ function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
   ];
   treeBases.forEach(([x, y]) => {
     frameBlocks.push(
-      rectPixel(x, y, 2, 10, theme.ridgeShadow, 0.88),
-      rectPixel(x - 3, y + 2, 8, 2, theme.nearRock, 0.94),
-      rectPixel(x - 2, y - 2, 6, 3, theme.nearRock, 0.94)
+      rectPixel(x, y, 2, 10, theme.ridgeShadow, 1),
+      rectPixel(x - 3, y + 2, 8, 2, theme.nearRock, 1),
+      rectPixel(x - 2, y - 2, 6, 3, theme.nearRock, 1)
     );
   });
 
@@ -252,17 +266,17 @@ function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
 function buildRiverValley({ width, sceneBottom, theme }) {
   const riverTop = sceneBottom - 31;
   const riverBlocks = [
-    rectPixel(Math.round(width * 0.19), riverTop, Math.round(width * 0.61), 5, theme.riverShadow, 0.7),
-    rectPixel(Math.round(width * 0.25), riverTop + 5, Math.round(width * 0.51), 7, theme.riverShadow, 0.78),
-    rectPixel(Math.round(width * 0.31), riverTop + 12, Math.round(width * 0.39), 6, theme.riverShadow, 0.66),
-    rectPixel(Math.round(width * 0.37), riverTop + 18, Math.round(width * 0.28), 4, theme.riverShadow, 0.56),
+    rectPixel(Math.round(width * 0.17), riverTop, Math.round(width * 0.65), 5, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.21), riverTop + 5, Math.round(width * 0.57), 7, theme.riverShadow, 1),
+    rectPixel(Math.round(width * 0.29), riverTop + 12, Math.round(width * 0.43), 6, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.35), riverTop + 18, Math.round(width * 0.31), 4, theme.riverShadow, 1),
   ];
   const glintOffsets = [
     [0.27, 2, 11], [0.36, 8, 6], [0.47, 4, 15], [0.58, 14, 8], [0.69, 9, 12], [0.43, 20, 5],
   ];
   glintOffsets.forEach(([xRatio, yOffset, glintWidth], index) => {
     riverBlocks.push(
-      rectPixel(Math.round(width * xRatio), riverTop + yOffset, glintWidth, 1, theme.riverGlint, index % 2 ? 0.54 : 0.7)
+      rectPixel(Math.round(width * xRatio), riverTop + yOffset, glintWidth, 1, theme.riverGlint, 1)
     );
   });
 
@@ -279,7 +293,7 @@ function buildMistBanks({ width, gridTop, sceneBottom, theme }) {
 
   return `<g id="pixel-mist-banks">${banks
     .map(([xRatio, y, blockWidth, blockHeight], index) =>
-      rectPixel(Math.round(width * xRatio), y, blockWidth, blockHeight, theme.mist, index < 6 ? 0.28 : 0.2)
+      rectPixel(Math.round(width * xRatio), y, blockWidth, blockHeight, theme.mist, index < 6 ? 0.72 : 0.56)
     )
     .join('')}</g>`;
 }
@@ -289,9 +303,21 @@ function buildStarfire({ width, theme }) {
     [0.08, 10], [0.21, 16], [0.32, 8], [0.48, 14], [0.59, 7], [0.73, 18], [0.86, 11], [0.95, 23],
   ];
 
-  return `<g id="pixel-starfire">${stars
-    .map(([xRatio, y], index) => rectPixel(Math.round(width * xRatio), y, index % 3 === 0 ? 2 : 1, 1, theme.starfire, 0.46))
-    .join('')}</g>`;
+  const pixels = stars.flatMap(([xRatio, y], index) => {
+    const x = Math.round(width * xRatio);
+    const star = [rectPixel(x, y, index % 3 === 0 ? 2 : 1, 1, theme.starfire, 1)];
+    if (index % 3 === 0) {
+      star.push(rectPixel(x, y - 1, 1, 3, theme.starfire, 1));
+    }
+    return star;
+  });
+
+  return `<g id="pixel-starfire">${pixels.join('')}</g>`;
+}
+
+function resolveSpiritTier(day) {
+  const countTier = day.count >= 20 ? 4 : day.count >= 10 ? 3 : day.count >= 4 ? 2 : 1;
+  return Math.max(countTier, Math.max(1, Math.min(4, day.level || 1)));
 }
 
 function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) {
@@ -309,40 +335,42 @@ function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) 
       if (!day.count) {
         const shardX = cx - 2 + ((weekIndex + dayIndex) % 3);
         const shardY = cy - 1 + ((weekIndex * 2 + dayIndex) % 2);
-        const shards = [rectPixel(shardX, shardY, 2, 1, theme.inactiveStone, 0.38)];
+        const shards = [rectPixel(shardX, shardY, 2, 1, theme.inactiveStone, 0.72)];
         if ((weekIndex * 5 + dayIndex) % 5 === 0) {
-          shards.push(rectPixel(shardX + 3, shardY + 1, 1, 1, theme.inactiveStone, 0.24));
+          shards.push(rectPixel(shardX + 3, shardY + 1, 1, 1, theme.inactiveStone, 0.56));
         }
         cells.push(`<g class="spirit-vein-cell" data-date="${escapeXml(day.date)}">${title}${shards.join('')}</g>`);
         return;
       }
 
-      const tier = Math.max(1, Math.min(4, day.level || 1));
-      const coreSize = tier >= 4 ? 5 : tier >= 2 ? 4 : 3;
+      const tier = resolveSpiritTier(day);
+      const coreSize = [0, 3, 4, 5, 6][tier];
       const coreX = cx - Math.floor(coreSize / 2);
       const coreY = cy - Math.floor(coreSize / 2);
+      const coreFill = tier === 1 ? theme.jadeDim : tier === 4 ? theme.jadeBright : theme.jadeCore;
       const fragments = [
-        rectPixel(coreX, coreY, coreSize, coreSize, theme.jadeCore, 0.96),
-        rectPixel(coreX - 3, coreY + coreSize - 1, 3, 1, theme.jadeDim, 0.82),
-        rectPixel(coreX + coreSize, coreY - 2, 1, 3, theme.jadeDim, 0.76),
+        rectPixel(coreX, coreY, coreSize, coreSize, coreFill, 1),
+        rectPixel(coreX - 3, coreY + coreSize - 1, 3, 1, theme.jadeDim, 1),
+        rectPixel(coreX + coreSize, coreY - 2, 1, 3, theme.jadeDim, 1),
       ];
 
       if (tier >= 2) {
         fragments.push(
-          rectPixel(coreX - 5, coreY + coreSize, 3, 1, theme.jadeDim, 0.72),
-          rectPixel(coreX + coreSize + 1, coreY - 4, 1, 2, theme.jadeBright, 0.62)
+          rectPixel(coreX - 5, coreY + coreSize, 3, 1, theme.jadeCore, 1),
+          rectPixel(coreX + coreSize + 1, coreY - 4, 1, 2, theme.jadeBright, 1)
         );
       }
       if (tier >= 3) {
         fragments.push(
-          rectPixel(coreX + 1, coreY - 4, 1, 2, theme.jadeBright, 0.82),
-          rectPixel(coreX - 2, coreY + coreSize + 1, 2, 1, theme.jadeDim, 0.7)
+          rectPixel(coreX + 1, coreY - 4, 1, 2, theme.jadeBright, 1),
+          rectPixel(coreX - 2, coreY + coreSize + 1, 2, 1, theme.jadeCore, 1),
+          rectPixel(cx - 1, cy - 1, 2, 2, theme.jadeBright, 1)
         );
       }
       if (tier === 4) {
         fragments.push(
-          rectPixel(cx - 1, cy - 1, 2, 2, theme.jadeBright, 0.96),
-          rectPixel(coreX + coreSize + 3, coreY - 4, 1, 1, theme.starfire, 0.84)
+          rectPixel(cx - 1, cy - 1, 2, 2, theme.ink, 1),
+          rectPixel(coreX + coreSize + 3, coreY - 4, 1, 1, theme.starfire, 1)
         );
       }
 
@@ -361,10 +389,10 @@ function buildSpiritSmoke({ activeDates, theme }) {
   const actorDuration = 2.05;
   const cycleDuration = Math.max(7.8, actorCount * 0.28 + 3.3).toFixed(2);
   const smokePixels = [
-    [-5, 1, 2, 1, theme.jadeDim, 0.7], [-3, -2, 1, 3, theme.jadeCore, 0.86],
-    [-1, 2, 2, 2, theme.jadeBright, 0.8], [1, -4, 1, 2, theme.jadeDim, 0.72],
-    [3, -1, 2, 1, theme.jadeCore, 0.78], [4, 2, 1, 2, theme.jadeBright, 0.66],
-    [0, -6, 1, 1, theme.starfire, 0.72], [-6, -2, 1, 1, theme.jadeDim, 0.62],
+    [-5, 1, 2, 1, theme.jadeDim, 1], [-3, -2, 1, 3, theme.jadeCore, 1],
+    [-1, 2, 2, 2, theme.jadeBright, 1], [1, -4, 1, 2, theme.jadeDim, 1],
+    [3, -1, 2, 1, theme.jadeCore, 1], [4, 2, 1, 2, theme.jadeBright, 1],
+    [0, -6, 1, 1, theme.jadeBright, 1], [-6, -2, 1, 1, theme.jadeDim, 1],
   ];
 
   const actors = Array.from({ length: actorCount }, (_, index) => {

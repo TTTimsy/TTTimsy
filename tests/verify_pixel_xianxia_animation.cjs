@@ -60,4 +60,17 @@ const denseSvg = buildAnimatedSvg({ data: denseData, themeName: 'dark', profileN
 assert.equal((denseSvg.match(/id="smoke-actor-/g) || []).length, 11, 'smoke actor count should be capped at eleven');
 assert.equal((denseSvg.match(/class="smoke-micro-pixel"/g) || []).length, 88, 'dense calendars should cap at 88 moving pixels');
 
+assert.match(svg, /fill="#18324b" opacity="1"/, 'mountain bodies should be opaque');
+assert.match(svg, /fill="#77a4af" opacity="1"/, 'mountains should expose a distinct rocky edge layer');
+const staticStars = svg.match(/<rect[^>]*fill="#f8d888"[^>]*>/g) || [];
+assert.ok(staticStars.length >= 8, 'the night sky should retain visible, sparse starfire');
+assert.ok(staticStars.every((star) => /width="[12]"/.test(star)), 'starfire must not form a long yellow line');
+
+const countTierSvg = buildAnimatedSvg({
+  data: [[{ count: 12, date: '2026-02-01', level: 1, weekday: 0 }]],
+  themeName: 'dark',
+  profileName: 'Timsy',
+});
+assert.match(countTierSvg, /data-date="2026-02-01" data-level="3"/, 'contribution count should strengthen a low reported level');
+
 console.log('Terraria spirit-vein SVG checks passed.');
