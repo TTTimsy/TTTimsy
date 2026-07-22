@@ -13,36 +13,40 @@ const levelNumber = {
 
 const themes = {
   light: {
-    inactiveStone: '#71818a',
-    farRock: '#7895a0',
-    nearRock: '#4d6f7b',
-    ridgeShadow: '#294350',
-    ridgeEdge: '#bddbd2',
-    riverDeep: '#4b8797',
-    riverShadow: '#74aebe',
-    riverGlint: '#d5f4e9',
-    mist: '#b8d9d7',
-    jadeDim: '#347b68',
-    jadeCore: '#168d6b',
-    jadeBright: '#e4f3bd',
-    starfire: '#d7a83d',
-    ink: '#29434c',
+    inactiveStone: '#4a6a92',
+    skyCobalt: '#5579ca',
+    skyMoon: '#9bd6ec',
+    farRock: '#4661ae',
+    nearRock: '#118c99',
+    ridgeShadow: '#12365a',
+    ridgeEdge: '#83e1df',
+    riverDeep: '#1d5fac',
+    riverShadow: '#3e91d0',
+    riverGlint: '#7fe9e3',
+    mist: '#a4dce4',
+    jadeDim: '#149b77',
+    jadeCore: '#20c987',
+    jadeBright: '#e7f9b7',
+    starfire: '#ffd97d',
+    ink: '#0f3f5e',
   },
   dark: {
-    inactiveStone: '#405965',
-    farRock: '#18324b',
-    nearRock: '#274d65',
-    ridgeShadow: '#0a1d2d',
-    ridgeEdge: '#77a4af',
-    riverDeep: '#0a2d40',
-    riverShadow: '#15566a',
-    riverGlint: '#b9f1e3',
-    mist: '#79aebb',
-    jadeDim: '#1d725f',
-    jadeCore: '#2caa82',
-    jadeBright: '#e6f6b8',
-    starfire: '#f8d888',
-    ink: '#c0e1e0',
+    inactiveStone: '#29496f',
+    skyCobalt: '#2d5cbd',
+    skyMoon: '#73b7e8',
+    farRock: '#254a8d',
+    nearRock: '#166c83',
+    ridgeShadow: '#082b3e',
+    ridgeEdge: '#5ce1e6',
+    riverDeep: '#073a70',
+    riverShadow: '#1266a8',
+    riverGlint: '#65f0e6',
+    mist: '#4c91c8',
+    jadeDim: '#0b8f70',
+    jadeCore: '#18c77d',
+    jadeBright: '#dff7b0',
+    starfire: '#ffe995',
+    ink: '#0c3a58',
   },
 };
 
@@ -155,18 +159,18 @@ function steppedPeak({ apexX, apexY, baseY, halfWidth, fill, capFill, depthFill,
   const blocks = [];
   const height = Math.max(1, baseY - apexY);
 
-  for (let y = apexY, row = 0; y < baseY; y += 4, row += 1) {
+  for (let y = apexY, row = 0; y < baseY; y += 6, row += 1) {
     const progress = (y - apexY) / height;
-    const currentHalf = Math.max(2, Math.round(halfWidth * (0.12 + progress * 0.88)));
-    blocks.push(rectPixel(apexX - currentHalf, y, currentHalf * 2, 4, fill, opacity));
+    const currentHalf = Math.max(8, Math.round(halfWidth * (0.24 + progress * 0.76)));
+    blocks.push(rectPixel(apexX - currentHalf, y, currentHalf * 2, 6, fill, opacity));
 
-    if (capFill && row % 3 === 1) {
-      const capWidth = Math.max(2, Math.round(currentHalf * 0.38));
-      blocks.push(rectPixel(apexX - currentHalf, y, capWidth, 1, capFill, 1));
+    if (capFill && row % 2 === 1) {
+      const capWidth = Math.max(10, Math.round(currentHalf * 0.42));
+      blocks.push(rectPixel(apexX - currentHalf, y, capWidth, 2, capFill, 1));
     }
     if (depthFill && row % 2 === 0) {
-      const shadowWidth = Math.max(3, Math.round(currentHalf * 0.72));
-      blocks.push(rectPixel(apexX + currentHalf - shadowWidth, y + 3, shadowWidth, 1, depthFill, 1));
+      const shadowWidth = Math.max(12, currentHalf - 4);
+      blocks.push(rectPixel(apexX + 2, y + 4, shadowWidth, 2, depthFill, 1));
     }
   }
 
@@ -176,40 +180,10 @@ function steppedPeak({ apexX, apexY, baseY, halfWidth, fill, capFill, depthFill,
 function buildFarRidges({ width, horizonY, sceneBottom, theme }) {
   const ridgeBlocks = [
     ...steppedPeak({
-      apexX: Math.round(width * 0.14),
-      apexY: horizonY + 12,
-      baseY: sceneBottom - 6,
-      halfWidth: Math.round(width * 0.18),
-      fill: theme.farRock,
-      capFill: theme.ridgeEdge,
-      depthFill: theme.ridgeShadow,
-      opacity: 1,
-    }),
-    ...steppedPeak({
-      apexX: Math.round(width * 0.39),
-      apexY: horizonY + 21,
-      baseY: sceneBottom - 7,
-      halfWidth: Math.round(width * 0.15),
-      fill: theme.farRock,
-      capFill: theme.ridgeEdge,
-      depthFill: theme.ridgeShadow,
-      opacity: 1,
-    }),
-    ...steppedPeak({
-      apexX: Math.round(width * 0.67),
-      apexY: horizonY + 17,
-      baseY: sceneBottom - 5,
-      halfWidth: Math.round(width * 0.16),
-      fill: theme.farRock,
-      capFill: theme.ridgeEdge,
-      depthFill: theme.ridgeShadow,
-      opacity: 1,
-    }),
-    ...steppedPeak({
-      apexX: Math.round(width * 0.89),
+      apexX: Math.round(width * 0.5),
       apexY: horizonY + 8,
-      baseY: sceneBottom - 5,
-      halfWidth: Math.round(width * 0.2),
+      baseY: sceneBottom - 6,
+      halfWidth: Math.round(width * 0.34),
       fill: theme.farRock,
       capFill: theme.ridgeEdge,
       depthFill: theme.ridgeShadow,
@@ -246,39 +220,19 @@ function buildFrameRidges({ width, gridTop, sceneBottom, theme }) {
     rectPixel(Math.round(width * 0.79), sceneBottom - 10, Math.round(width * 0.21), 8, theme.ridgeShadow, 1),
   ];
 
-  const treeBases = [
-    [Math.round(width * 0.04), sceneBottom - 24],
-    [Math.round(width * 0.18), sceneBottom - 19],
-    [Math.round(width * 0.82), sceneBottom - 22],
-    [Math.round(width * 0.96), sceneBottom - 26],
-  ];
-  treeBases.forEach(([x, y]) => {
-    frameBlocks.push(
-      rectPixel(x, y, 2, 10, theme.ridgeShadow, 1),
-      rectPixel(x - 3, y + 2, 8, 2, theme.nearRock, 1),
-      rectPixel(x - 2, y - 2, 6, 3, theme.nearRock, 1)
-    );
-  });
-
   return `<g id="pixel-frame-ridges">${frameBlocks.join('')}</g>`;
 }
 
 function buildRiverValley({ width, sceneBottom, theme }) {
   const riverTop = sceneBottom - 31;
   const riverBlocks = [
-    rectPixel(Math.round(width * 0.17), riverTop, Math.round(width * 0.65), 5, theme.riverDeep, 1),
-    rectPixel(Math.round(width * 0.21), riverTop + 5, Math.round(width * 0.57), 7, theme.riverShadow, 1),
-    rectPixel(Math.round(width * 0.29), riverTop + 12, Math.round(width * 0.43), 6, theme.riverDeep, 1),
-    rectPixel(Math.round(width * 0.35), riverTop + 18, Math.round(width * 0.31), 4, theme.riverShadow, 1),
+    rectPixel(Math.round(width * 0.17), riverTop, Math.round(width * 0.65), 6, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.23), riverTop + 6, Math.round(width * 0.54), 6, theme.riverShadow, 1),
+    rectPixel(Math.round(width * 0.31), riverTop + 12, Math.round(width * 0.38), 6, theme.riverDeep, 1),
+    rectPixel(Math.round(width * 0.28), riverTop + 2, 18, 4, theme.riverGlint, 1),
+    rectPixel(Math.round(width * 0.48), riverTop + 8, 26, 4, theme.riverGlint, 1),
+    rectPixel(Math.round(width * 0.57), riverTop + 14, 20, 4, theme.riverGlint, 1),
   ];
-  const glintOffsets = [
-    [0.27, 2, 11], [0.36, 8, 6], [0.47, 4, 15], [0.58, 14, 8], [0.69, 9, 12], [0.43, 20, 5],
-  ];
-  glintOffsets.forEach(([xRatio, yOffset, glintWidth], index) => {
-    riverBlocks.push(
-      rectPixel(Math.round(width * xRatio), riverTop + yOffset, glintWidth, 1, theme.riverGlint, 1)
-    );
-  });
 
   return `<g id="pixel-river-valley">${riverBlocks.join('')}</g>`;
 }
@@ -286,39 +240,54 @@ function buildRiverValley({ width, sceneBottom, theme }) {
 function buildMistBanks({ width, gridTop, sceneBottom, theme }) {
   const mistY = sceneBottom - 44;
   const banks = [
-    [0.07, mistY + 4, 24, 2], [0.16, mistY, 38, 2], [0.28, mistY + 5, 31, 2],
-    [0.49, mistY + 2, 46, 2], [0.66, mistY + 6, 29, 2], [0.78, mistY + 1, 43, 2],
-    [0.02, gridTop + 9, 16, 1], [0.88, gridTop + 14, 18, 1],
+    [0.12, mistY + 2, 62, 4],
+    [0.64, mistY + 7, 58, 4],
   ];
 
   return `<g id="pixel-mist-banks">${banks
-    .map(([xRatio, y, blockWidth, blockHeight], index) =>
-      rectPixel(Math.round(width * xRatio), y, blockWidth, blockHeight, theme.mist, index < 6 ? 0.72 : 0.56)
+    .map(([xRatio, y, blockWidth, blockHeight]) =>
+      rectPixel(Math.round(width * xRatio), y, blockWidth, blockHeight, theme.mist, 1)
+    )
+    .join('')}</g>`;
+}
+
+function buildSkyCurrents({ width, theme }) {
+  const currents = [
+    { fill: theme.skyCobalt, shelves: [[0.05, 8, 54], [0.11, 12, 72], [0.2, 16, 48]] },
+    { fill: theme.skyMoon, shelves: [[0.52, 11, 62], [0.59, 15, 78], [0.69, 19, 46]] },
+  ];
+
+  return `<g id="pixel-sky-currents">${currents
+    .map(({ fill, shelves }) =>
+      `<g class="sky-current">${shelves
+        .map(([xRatio, y, blockWidth]) => rectPixel(Math.round(width * xRatio), y, blockWidth, 4, fill, 1))
+        .join('')}</g>`
     )
     .join('')}</g>`;
 }
 
 function buildStarfire({ width, theme }) {
-  const stars = [
-    [0.08, 10], [0.21, 16], [0.32, 8], [0.48, 14], [0.59, 7], [0.73, 18], [0.86, 11], [0.95, 23],
-  ];
+  const whorl = (x, y) => `<g class="star-whorl">${[
+    rectPixel(x, y, 4, 4, theme.starfire, 1),
+    rectPixel(x - 2, y, 2, 2, theme.skyMoon, 1),
+    rectPixel(x + 4, y + 2, 2, 2, theme.skyMoon, 1),
+    rectPixel(x, y - 2, 2, 2, theme.skyMoon, 1),
+    rectPixel(x + 2, y + 4, 2, 2, theme.skyMoon, 1),
+  ].join('')}</g>`;
 
-  const pixels = stars.flatMap(([xRatio, y], index) => {
-    const x = Math.round(width * xRatio);
-    const star = [rectPixel(x, y, index % 3 === 0 ? 2 : 1, 1, theme.starfire, 1)];
-    if (index % 3 === 0) {
-      star.push(rectPixel(x, y - 1, 1, 3, theme.starfire, 1));
-    }
-    return star;
-  });
-
-  return `<g id="pixel-starfire">${pixels.join('')}</g>`;
+  return `<g id="pixel-starfire">${[
+    whorl(Math.round(width * 0.41), 7),
+    whorl(Math.round(width * 0.47), 22),
+    whorl(Math.round(width * 0.9), 7),
+  ].join('')}</g>`;
 }
 
 function resolveSpiritTier(day) {
   const countTier = day.count >= 20 ? 4 : day.count >= 10 ? 3 : day.count >= 4 ? 2 : 1;
   return Math.max(countTier, Math.max(1, Math.min(4, day.level || 1)));
 }
+
+const veinShapeNames = ['', 'sprout', 'seam', 'lode', 'geode'];
 
 function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) {
   const activeDates = [];
@@ -333,50 +302,48 @@ function buildContributionSpiritVeins({ data, cell, paddingX, gridTop, theme }) 
       const title = `<title>${escapeXml(`${day.date}: ${day.count} contributions`)}</title>`;
 
       if (!day.count) {
-        const shardX = cx - 2 + ((weekIndex + dayIndex) % 3);
-        const shardY = cy - 1 + ((weekIndex * 2 + dayIndex) % 2);
-        const shards = [rectPixel(shardX, shardY, 2, 1, theme.inactiveStone, 0.72)];
-        if ((weekIndex * 5 + dayIndex) % 5 === 0) {
-          shards.push(rectPixel(shardX + 3, shardY + 1, 1, 1, theme.inactiveStone, 0.56));
-        }
-        cells.push(`<g class="spirit-vein-cell" data-date="${escapeXml(day.date)}">${title}${shards.join('')}</g>`);
+        cells.push(
+          `<g class="spirit-vein-cell" data-date="${escapeXml(day.date)}">${title}${rectPixel(
+            cx - 2,
+            cy - 1,
+            4,
+            2,
+            theme.inactiveStone,
+            1
+          )}</g>`
+        );
         return;
       }
 
       const tier = resolveSpiritTier(day);
-      const coreSize = [0, 3, 4, 5, 6][tier];
-      const coreX = cx - Math.floor(coreSize / 2);
-      const coreY = cy - Math.floor(coreSize / 2);
-      const coreFill = tier === 1 ? theme.jadeDim : tier === 4 ? theme.jadeBright : theme.jadeCore;
-      const fragments = [
-        rectPixel(coreX, coreY, coreSize, coreSize, coreFill, 1),
-        rectPixel(coreX - 3, coreY + coreSize - 1, 3, 1, theme.jadeDim, 1),
-        rectPixel(coreX + coreSize, coreY - 2, 1, 3, theme.jadeDim, 1),
-      ];
-
-      if (tier >= 2) {
-        fragments.push(
-          rectPixel(coreX - 5, coreY + coreSize, 3, 1, theme.jadeCore, 1),
-          rectPixel(coreX + coreSize + 1, coreY - 4, 1, 2, theme.jadeBright, 1)
-        );
-      }
-      if (tier >= 3) {
-        fragments.push(
-          rectPixel(coreX + 1, coreY - 4, 1, 2, theme.jadeBright, 1),
-          rectPixel(coreX - 2, coreY + coreSize + 1, 2, 1, theme.jadeCore, 1),
-          rectPixel(cx - 1, cy - 1, 2, 2, theme.jadeBright, 1)
-        );
-      }
-      if (tier === 4) {
-        fragments.push(
-          rectPixel(cx - 1, cy - 1, 2, 2, theme.ink, 1),
-          rectPixel(coreX + coreSize + 3, coreY - 4, 1, 1, theme.starfire, 1)
-        );
-      }
+      const layouts = [null, [cx - 2, cy - 3], [cx - 3, cy - 2], [cx - 4, cy - 2], [cx - 5, cy - 3]];
+      const [coreX, coreY] = layouts[tier];
+      const fragmentsByTier = {
+        1: [
+          rectPixel(coreX, coreY, 4, 4, theme.jadeDim, 1),
+          rectPixel(coreX + 1, coreY + 4, 2, 2, theme.ridgeShadow, 1),
+        ],
+        2: [
+          rectPixel(coreX, coreY, 6, 4, theme.jadeCore, 1),
+          rectPixel(coreX + 2, coreY - 2, 2, 2, theme.jadeBright, 1),
+          rectPixel(coreX + 2, coreY + 4, 2, 2, theme.ridgeShadow, 1),
+        ],
+        3: [
+          rectPixel(coreX, coreY, 8, 4, theme.jadeCore, 1),
+          rectPixel(coreX + 2, coreY - 2, 4, 2, theme.jadeBright, 1),
+          rectPixel(coreX + 2, coreY + 4, 3, 3, theme.jadeBright, 1),
+        ],
+        4: [
+          rectPixel(coreX, coreY, 10, 6, theme.jadeCore, 1),
+          rectPixel(coreX + 3, coreY + 1, 4, 4, theme.jadeBright, 1),
+          rectPixel(coreX + 4, coreY - 2, 2, 2, theme.starfire, 1),
+        ],
+      };
+      const fragments = fragmentsByTier[tier];
 
       activeDates.push({ cx, cy, date: day.date, count: day.count, level: tier });
       cells.push(
-        `<g class="spirit-vein-cell" data-date="${escapeXml(day.date)}" data-level="${tier}">${title}${fragments.join('')}</g>`
+        `<g class="spirit-vein-cell" data-date="${escapeXml(day.date)}" data-level="${tier}" data-vein-shape="${veinShapeNames[tier]}">${title}${fragments.join('')}</g>`
       );
     });
   });
@@ -446,6 +413,7 @@ function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
   <rect id="cycle-timer" x="-1" y="-1" width="1" height="1" fill="none" opacity="0">
     <animate id="cycle" attributeName="x" from="-1" to="0" begin="0s;cycle.end+1.2s" dur="${smokeScene.cycleDuration}s" fill="freeze" />
   </rect>
+  ${buildSkyCurrents({ width, theme })}
   ${buildStarfire({ width, theme })}
   ${buildFarRidges({ width, horizonY: gridTop + 64, sceneBottom, theme })}
   ${buildFrameRidges({ width, gridTop, sceneBottom, theme })}

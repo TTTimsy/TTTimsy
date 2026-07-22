@@ -17,7 +17,20 @@ const data = [
 
 const svg = buildAnimatedSvg({ data, themeName: 'dark', profileName: 'Timsy' });
 
+function groupContent(markup, id) {
+  const match = markup.match(new RegExp(`<g id="${id}">([\\s\\S]*?)</g>`));
+  assert.ok(match, `missing ${id}`);
+  return match[1];
+}
+
+function rectDimension(tag, attribute) {
+  const match = tag.match(new RegExp(`${attribute}="(\\d+)"`));
+  assert.ok(match, `missing ${attribute} in ${tag}`);
+  return Number(match[1]);
+}
+
 assert.match(svg, /shape-rendering="crispEdges"/);
+assert.match(svg, /id="pixel-sky-currents"/);
 assert.match(svg, /id="pixel-far-ridges"/);
 assert.match(svg, /id="pixel-frame-ridges"/);
 assert.match(svg, /id="pixel-river-valley"/);
@@ -60,17 +73,33 @@ const denseSvg = buildAnimatedSvg({ data: denseData, themeName: 'dark', profileN
 assert.equal((denseSvg.match(/id="smoke-actor-/g) || []).length, 11, 'smoke actor count should be capped at eleven');
 assert.equal((denseSvg.match(/class="smoke-micro-pixel"/g) || []).length, 88, 'dense calendars should cap at 88 moving pixels');
 
-assert.match(svg, /fill="#18324b" opacity="1"/, 'mountain bodies should be opaque');
-assert.match(svg, /fill="#77a4af" opacity="1"/, 'mountains should expose a distinct rocky edge layer');
-const staticStars = svg.match(/<rect[^>]*fill="#f8d888"[^>]*>/g) || [];
-assert.ok(staticStars.length >= 8, 'the night sky should retain visible, sparse starfire');
-assert.ok(staticStars.every((star) => /width="[12]"/.test(star)), 'starfire must not form a long yellow line');
+assert.equal((svg.match(/class="sky-current"/g) || []).length, 2, 'the sky should have two connected current masses');
+assert.equal((svg.match(/class="star-whorl"/g) || []).length, 3, 'the sky should have three connected star whorls');
+assert.match(groupContent(svg, 'pixel-far-ridges'), /fill="#254a8d" opacity="1"/);
+assert.match(groupContent(svg, 'pixel-frame-ridges'), /fill="#166c83" opacity="1"/);
+assert.match(groupContent(svg, 'pixel-river-valley'), /fill="#1266a8" opacity="1"/);
 
-const countTierSvg = buildAnimatedSvg({
-  data: [[{ count: 12, date: '2026-02-01', level: 1, weekday: 0 }]],
+const staticRects = [...svg.matchAll(/<rect\b[^>]*\/>/g)]
+  .map(([tag]) => tag)
+  .filter((tag) => !tag.includes('cycle-timer') && !tag.includes('smoke-micro-pixel'));
+assert.ok(
+  staticRects.every((tag) => rectDimension(tag, 'width') >= 2 && rectDimension(tag, 'height') >= 2),
+  'static layers must not contain isolated one-pixel blocks'
+);
+
+const shapeSvg = buildAnimatedSvg({
+  data: [[
+    { count: 1, date: '2026-02-01', level: 1, weekday: 0 },
+    { count: 4, date: '2026-02-02', level: 1, weekday: 1 },
+    { count: 12, date: '2026-02-03', level: 1, weekday: 2 },
+    { count: 20, date: '2026-02-04', level: 1, weekday: 3 },
+  ]],
   themeName: 'dark',
   profileName: 'Timsy',
 });
-assert.match(countTierSvg, /data-date="2026-02-01" data-level="3"/, 'contribution count should strengthen a low reported level');
+assert.match(shapeSvg, /data-level="1" data-vein-shape="sprout"/);
+assert.match(shapeSvg, /data-level="2" data-vein-shape="seam"/);
+assert.match(shapeSvg, /data-level="3" data-vein-shape="lode"/);
+assert.match(shapeSvg, /data-level="4" data-vein-shape="geode"/);
 
 console.log('Terraria spirit-vein SVG checks passed.');
