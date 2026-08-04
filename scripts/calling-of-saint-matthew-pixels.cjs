@@ -7,6 +7,12 @@ const SUBPIXELS_PER_DAY = 3;
 const TARGET_COLUMNS = TARGET_WEEKS * SUBPIXELS_PER_DAY;
 const TARGET_ROWS = DAYS_PER_WEEK * SUBPIXELS_PER_DAY;
 const FOCAL_Y = 0.36;
+const REVEAL_SECONDS = 10;
+const HOLD_SECONDS = 4;
+const RETURN_SECONDS = 4;
+const CYCLE_SECONDS = REVEAL_SECONDS + HOLD_SECONDS + RETURN_SECONDS;
+const PIXEL_TRANSITION_SECONDS = 0.25;
+const LAST_REVEAL_DELAY = REVEAL_SECONDS - PIXEL_TRANSITION_SECONDS;
 const PALETTE = [
   '#090706', '#16100c', '#2b1b12', '#432918',
   '#5d3a20', '#794a25', '#965f2c', '#b77a38',
@@ -52,6 +58,34 @@ function nearestPaletteColor(red, green, blue) {
   );
 }
 
+function mixHex(from, to, factor) {
+  const fromChannels = parseHex(from);
+  const toChannels = parseHex(to);
+  const value = fromChannels
+    .map((channel, index) => Math.round(channel + (toChannels[index] - channel) * factor).toString(16).padStart(2, '0'))
+    .join('');
+  return `#${value}`;
+}
+
+function initialColorForLevel(finalColor, level) {
+  const factors = [0, 0.28, 0.48, 0.7, 1];
+  const safeLevel = Math.min(4, Math.max(0, Number(level) || 0));
+  return safeLevel === 0 ? PALETTE[0] : mixHex(PALETTE[0], finalColor, factors[safeLevel]);
+}
+
+function hash32(value) {
+  let hash = 0x811c9dc5;
+  for (const character of value) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function animationDelayFor(date, subpixelX, subpixelY) {
+  return (hash32(`${date}:${subpixelX}:${subpixelY}`) % 10000) / 10000 * LAST_REVEAL_DELAY;
+}
+
 function loadPixelArt(sourcePath) {
   const image = PNG.sync.read(fs.readFileSync(sourcePath));
   if (!image?.width || !image?.height || !image?.data || image.data.length !== image.width * image.height * 4) {
@@ -85,7 +119,16 @@ module.exports = {
   TARGET_COLUMNS,
   TARGET_ROWS,
   PALETTE,
+  REVEAL_SECONDS,
+  HOLD_SECONDS,
+  RETURN_SECONDS,
+  CYCLE_SECONDS,
+  PIXEL_TRANSITION_SECONDS,
+  LAST_REVEAL_DELAY,
   cropBounds,
   nearestPaletteColor,
+  mixHex,
+  initialColorForLevel,
+  animationDelayFor,
   loadPixelArt,
 };
