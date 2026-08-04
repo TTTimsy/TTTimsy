@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
-const { buildAnimatedSvg } = require('../scripts/generate-spirit-vein-svg.cjs');
+const { buildAnimatedSvg, normalizeWeeks } = require('../scripts/generate-spirit-vein-svg.cjs');
 
 const {
   TARGET_COLUMNS,
@@ -34,6 +35,15 @@ assert.notEqual(initialColorForLevel('#d29a4e', 1), initialColorForLevel('#d29a4
 assert.equal(animationDelayFor('2026-01-02', 1, 2), animationDelayFor('2026-01-02', 1, 2));
 assert.notEqual(animationDelayFor('2026-01-02', 1, 2), animationDelayFor('2026-01-03', 1, 2));
 
+const partialWeeks = Array.from({ length: 53 }, (_, index) => ({
+  contributionDays: index === 0 ? [{ contributionCount: 2, contributionLevel: 'SECOND_QUARTILE', date: '2026-01-01', weekday: 4 }] : [],
+}));
+const paddedWeeks = normalizeWeeks(partialWeeks);
+assert.equal(paddedWeeks.length, 53);
+assert.ok(paddedWeeks.every((week) => week.length === 7));
+assert.deepEqual(paddedWeeks[0][4], { count: 2, date: '2026-01-01', level: 2, weekday: 4 });
+assert.equal(paddedWeeks[0][0].count, 0);
+
 const calendar = Array.from({ length: 53 }, (_, week) =>
   Array.from({ length: 7 }, (_, weekday) => ({
     date: week === 0 && weekday === 0 ? '2026-01-01' : `2026-${String(week + 1).padStart(2, '0')}-${String(weekday + 1).padStart(2, '0')}`,
@@ -51,5 +61,15 @@ assert.match(svg, /dur="18s"/);
 assert.match(svg, /begin="0s"/);
 assert.doesNotMatch(svg, /<(?:image|filter|script|path|circle|ellipse)\b/);
 assert.doesNotMatch(svg, /data:image\/png;base64|spirit-vein|terraria|smoke-actor/i);
+
+for (const filename of [
+  'TTTimsy-contribution-animation.svg',
+  'TTTimsy-contribution-animation-dark.svg',
+]) {
+  const artifact = fs.readFileSync(path.join(__dirname, '..', filename), 'utf8');
+  assert.match(artifact, /id="calling-of-saint-matthew-mosaic"/);
+  assert.equal((artifact.match(/class="matthew-pixel"/g) || []).length, 3339);
+  assert.doesNotMatch(artifact, /data:image\/png;base64|spirit-vein|terraria/i);
+}
 
 console.log('Calling of Saint Matthew SVG checks passed.');

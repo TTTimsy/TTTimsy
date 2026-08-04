@@ -41,7 +41,15 @@ function requestContributionWeeks(login, token) {
 }
 
 function normalizeWeeks(weeks) {
-  return weeks.map((week) => week.contributionDays.map((day) => ({ count: day.contributionCount, date: day.date, level: levelNumber[day.contributionLevel] || 0, weekday: day.weekday })));
+  return weeks.map((week, weekIndex) => {
+    const byWeekday = new Map((week.contributionDays || []).map((day) => [day.weekday, day]));
+    return Array.from({ length: 7 }, (_, weekday) => {
+      const day = byWeekday.get(weekday);
+      return day
+        ? { count: day.contributionCount, date: day.date, level: levelNumber[day.contributionLevel] || 0, weekday }
+        : { count: 0, date: `padding-${weekIndex}-${weekday}`, level: 0, weekday };
+    });
+  });
 }
 
 function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
