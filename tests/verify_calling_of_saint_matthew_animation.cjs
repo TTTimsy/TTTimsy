@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { buildAnimatedSvg, normalizeWeeks } = require('../scripts/generate-spirit-vein-svg.cjs');
+const { buildContributionTopology } = require('../scripts/contribution-pulse-topology.cjs');
 
 const {
   TARGET_COLUMNS,
@@ -43,6 +44,29 @@ assert.equal(paddedWeeks.length, 53);
 assert.ok(paddedWeeks.every((week) => week.length === 7));
 assert.deepEqual(paddedWeeks[0][4], { count: 2, date: '2026-01-01', level: 2, weekday: 4 });
 assert.equal(paddedWeeks[0][0].count, 0);
+
+const smallCalendar = [
+  [
+    { date: 'a', count: 2, level: 2, weekday: 0 },
+    { date: 'b', count: 0, level: 0, weekday: 1 },
+    { date: 'x', count: 0, level: 0, weekday: 2 },
+    { date: 'c', count: 9, level: 4, weekday: 3 },
+  ],
+  [
+    { date: 'd', count: 4, level: 3, weekday: 0 },
+    { date: 'e', count: 7, level: 4, weekday: 1 },
+    { date: 'f', count: 0, level: 0, weekday: 2 },
+    { date: 'g', count: 0, level: 0, weekday: 3 },
+  ],
+];
+const topology = buildContributionTopology(smallCalendar, { weeks: 2, days: 4 });
+assert.equal(topology.components.length, 2);
+const connectedComponent = topology.components.find((component) => component.root.date === 'e');
+assert.ok(connectedComponent);
+assert.equal(connectedComponent.members.length, 3);
+assert.ok(topology.bridges.some((edge) => edge.from.date === 'e' && edge.to.date === 'd'));
+assert.ok(topology.bridges.every((edge) => edge.from.count > 0 && edge.to.count > 0));
+assert.equal(topology.distanceByCoordinate.get('0,1'), 1);
 
 const calendar = Array.from({ length: 53 }, (_, week) =>
   Array.from({ length: 7 }, (_, weekday) => ({
