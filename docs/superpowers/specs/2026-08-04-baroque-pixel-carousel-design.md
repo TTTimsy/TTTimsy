@@ -25,14 +25,14 @@ The order deliberately moves from Caravaggio’s dramatic darkness to Rembrandt�
 ## Architecture
 
 - Add three local source image files next to `picture.png`; define an ordered artwork manifest containing display title, source path, and focal point.
-- Extend the pixel sampler to load every manifest image into an independently sampled 159×21 palette array.
+- Extend the pixel sampler with JPEG decoding for the newly downloaded museum files, then load every manifest image into an independently sampled 159×21 palette array.
 - Replace the current two-state reveal animation with a single four-artwork SMIL color sequence per pixel. All transitions are encoded in one SVG so the README remains self-contained and needs no browser JavaScript.
 - Continue generating the light and dark SVG filenames expected by `README.md`; the visual content is intentionally the same because the paintings provide their own dark palette.
 - Keep the contribution calendar fetch only if required by surrounding workflow compatibility; the artwork timing and colors must not depend on contribution levels or counts.
 
 ## Validation
 
-- Test that all four artwork assets decode and each samples to 3339 palette colors.
+- Test that all four artwork assets decode, whether PNG or JPEG, and each samples to 3339 palette colors.
 - Test the `159×21` viewBox, 3339 unit pixels, 56-second duration, and four ordered artwork transitions.
 - Test that deterministic timing differs across coordinates and transitions.
 - Reject rendered SVG containing prior topology classes or unsupported raster embedding.
