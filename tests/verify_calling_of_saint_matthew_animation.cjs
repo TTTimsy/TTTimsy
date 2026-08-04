@@ -78,13 +78,16 @@ const calendar = Array.from({ length: 53 }, (_, week) =>
 );
 const svg = buildAnimatedSvg({ data: calendar, themeName: 'dark', profileName: 'Timsy' });
 assert.match(svg, /id="calling-of-saint-matthew-mosaic"/);
+assert.match(svg, /viewBox="0 0 424 56"/);
 assert.match(svg, /id="contribution-cell-frames"/);
 assert.match(svg, /id="contribution-pulse-bridges"/);
 assert.match(svg, /id="contribution-root-halos"/);
 assert.equal((svg.match(/class="matthew-pixel"/g) || []).length, 3339);
+assert.equal((svg.match(/class="matthew-pixel"[^>]*width="2" height="2"/g) || []).length, 3339);
 assert.equal((svg.match(/class="contribution-cell-frame"/g) || []).length, 371);
 assert.ok((svg.match(/class="pulse-bridge"/g) || []).length > 0);
 assert.ok((svg.match(/class="contribution-root-halo"/g) || []).length > 0);
+assert.doesNotMatch(svg, /class="contribution-root-halo"[^>]*width="3.7"/);
 assert.equal((svg.match(/data-subpixel="[0-2],[0-2]"/g) || []).length, 3339);
 assert.match(svg, /data-date="2026-01-01" data-count="0" data-level="0"/);
 assert.match(svg, /dur="24s"/);

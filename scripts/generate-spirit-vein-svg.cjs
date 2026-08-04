@@ -56,7 +56,7 @@ function buildAnimatedSvg({ data, themeName, profileName = 'GitHub user' }) {
   if (!['light', 'dark'].includes(themeName)) throw new Error(`Unknown theme: ${themeName}`);
   const mosaic = buildContributionMosaic({ data, pixelArt: loadPixelArt(path.join(__dirname, '..', 'picture.png')) });
   const label = `${profileName} Calling of Saint Matthew contribution mosaic`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="100%" viewBox="0 0 159 21" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label)}" shape-rendering="crispEdges"><title>${escapeXml(label)}</title><desc>Animated pixel rendition of The Calling of Saint Matthew. Contribution activity controls the initial brightness.</desc>${mosaic}</svg>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="100%" viewBox="0 0 424 56" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label)}" shape-rendering="crispEdges"><title>${escapeXml(label)}</title><desc>Animated pixel rendition of The Calling of Saint Matthew. Contribution activity controls the initial brightness.</desc>${mosaic}</svg>\n`;
 }
 
 async function main() {

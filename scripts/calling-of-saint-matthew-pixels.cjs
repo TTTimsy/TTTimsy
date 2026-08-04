@@ -108,7 +108,7 @@ function buildContributionMosaic({ data, pixelArt }) {
   const frames = [];
   const markup = data.map((week, weekIndex) => week.map((day, weekday) => {
     const level = Math.min(4, Math.max(0, Number(day.level) || 0));
-    frames.push(`<rect class="contribution-cell-frame" x="${weekIndex * 3}" y="${weekday * 3}" width="3" height="3" fill="none" stroke="#794a25" stroke-width="0.18" opacity="0.8" />`);
+    frames.push(`<rect class="contribution-cell-frame" x="${weekIndex * 8}" y="${weekday * 8}" width="8" height="8" fill="none" stroke="#3d1e0f" stroke-width="1" opacity="1" />`);
     const pixels = [];
     for (let subY = 0; subY < SUBPIXELS_PER_DAY; subY += 1) {
       for (let subX = 0; subX < SUBPIXELS_PER_DAY; subX += 1) {
@@ -121,13 +121,13 @@ function buildContributionMosaic({ data, pixelArt }) {
         const revealStart = (delay / CYCLE_SECONDS).toFixed(4);
         const revealEnd = ((delay + PIXEL_TRANSITION_SECONDS) / CYCLE_SECONDS).toFixed(4);
         const returnStart = ((20 + (1 - Math.min(1, delay / 16)) * 3.75) / CYCLE_SECONDS).toFixed(4);
-        pixels.push(`<rect class="matthew-pixel" data-subpixel="${subX},${subY}" x="${weekIndex * SUBPIXELS_PER_DAY + subX}" y="${weekday * SUBPIXELS_PER_DAY + subY}" width="1" height="1" fill="${initialColor}"><animate attributeName="fill" values="${initialColor};${initialColor};${finalColor};${finalColor};${initialColor}" keyTimes="0;${revealStart};${revealEnd};${returnStart};1" dur="${CYCLE_SECONDS}s" begin="0s" repeatCount="indefinite" /></rect>`);
+        pixels.push(`<rect class="matthew-pixel" data-subpixel="${subX},${subY}" x="${weekIndex * 8 + subX * 2}" y="${weekday * 8 + subY * 2}" width="2" height="2" fill="${initialColor}"><animate attributeName="fill" values="${initialColor};${initialColor};${finalColor};${finalColor};${initialColor}" keyTimes="0;${revealStart};${revealEnd};${returnStart};1" dur="${CYCLE_SECONDS}s" begin="0s" repeatCount="indefinite" /></rect>`);
       }
     }
     return `<g class="contribution-day" data-date="${escapeXml(day.date)}" data-count="${Number(day.count) || 0}" data-level="${level}"><title>${escapeXml(`${day.date}: ${Number(day.count) || 0} contributions`)}</title>${pixels.join('')}</g>`;
   }).join('')).join('');
   const bridges = topology.bridges.slice(0, 1000).map(({ from, to }) => `<rect class="pulse-bridge" x="${Math.min(from.weekIndex, to.weekIndex) * 3 + 1}" y="${Math.min(from.weekday, to.weekday) * 3 + 1}" width="${Math.abs(from.weekIndex - to.weekIndex) * 3 + 1}" height="${Math.abs(from.weekday - to.weekday) * 3 + 1}" fill="#edd08a" opacity="0.15"><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.14;0.28;0.42;1" dur="24s" begin="0s" repeatCount="indefinite" /></rect>`).join('');
-  const halos = topology.components.map(({ root }) => `<g class="contribution-root-halo"><rect x="${root.weekIndex * 3 - 0.35}" y="${root.weekday * 3 - 0.35}" width="3.7" height="3.7" fill="none" stroke="#f0bf72" stroke-width="0.3"><animate attributeName="opacity" values="0.25;1;0.25" dur="24s" begin="0s" repeatCount="indefinite" /></rect></g>`).join('');
+  const halos = topology.components.map(({ root }) => `<g class="contribution-root-halo"><rect x="${root.weekIndex * 8 + 2}" y="${root.weekday * 8 + 2}" width="2" height="2" fill="#d29a4e"><animate attributeName="opacity" values="0;1;0" dur="24s" begin="0s" repeatCount="indefinite" /></rect></g>`).join('');
   return `<g id="contribution-cell-frames">${frames.join('')}</g><g id="contribution-pulse-bridges">${bridges}</g><g id="calling-of-saint-matthew-mosaic">${markup}</g><g id="contribution-root-halos">${halos}</g>`;
 }
 
