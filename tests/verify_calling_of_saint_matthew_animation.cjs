@@ -1,101 +1,40 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildAnimatedSvg, normalizeWeeks } = require('../scripts/generate-spirit-vein-svg.cjs');
-const { buildContributionTopology } = require('../scripts/contribution-pulse-topology.cjs');
+const { ARTWORKS } = require('../scripts/baroque-artworks.cjs');
+const { buildAnimatedSvg } = require('../scripts/generate-spirit-vein-svg.cjs');
+const { TARGET_COLUMNS, TARGET_ROWS, PALETTE, loadArtworkPixelArt, TRANSITION_SECONDS, HOLD_SECONDS, SEGMENT_SECONDS, CYCLE_SECONDS, transitionDelayFor } = require('../scripts/calling-of-saint-matthew-pixels.cjs');
 
-const {
-  TARGET_COLUMNS,
-  TARGET_ROWS,
-  PALETTE,
-  loadPixelArt,
-  initialColorForLevel,
-  animationDelayFor,
-  REVEAL_SECONDS,
-  HOLD_SECONDS,
-  RETURN_SECONDS,
-  CYCLE_SECONDS,
-} = require('../scripts/calling-of-saint-matthew-pixels.cjs');
-
-const sourcePath = path.join(__dirname, '..', 'picture.png');
-const first = loadPixelArt(sourcePath);
-const second = loadPixelArt(sourcePath);
-
+assert.deepEqual(ARTWORKS.map(({ id }) => id), ['calling-of-saint-matthew', 'denial-of-saint-peter', 'jewish-bride', 'syndics']);
 assert.equal(TARGET_COLUMNS, 159);
 assert.equal(TARGET_ROWS, 21);
-assert.equal(first.length, TARGET_COLUMNS * TARGET_ROWS);
-assert.deepEqual(first, second);
-assert.ok(first.every((pixel) => PALETTE.includes(pixel)));
-assert.ok(new Set(first).size >= 8);
-assert.equal(REVEAL_SECONDS, 10);
+assert.equal(TRANSITION_SECONDS, 10);
 assert.equal(HOLD_SECONDS, 4);
-assert.equal(RETURN_SECONDS, 4);
-assert.equal(CYCLE_SECONDS, 18);
-assert.equal(initialColorForLevel('#d29a4e', 0), '#090706');
-assert.notEqual(initialColorForLevel('#d29a4e', 1), initialColorForLevel('#d29a4e', 4));
-assert.equal(animationDelayFor('2026-01-02', 1, 2), animationDelayFor('2026-01-02', 1, 2));
-assert.notEqual(animationDelayFor('2026-01-02', 1, 2), animationDelayFor('2026-01-03', 1, 2));
+assert.equal(SEGMENT_SECONDS, 14);
+assert.equal(CYCLE_SECONDS, 56);
+const artworkPixels = loadArtworkPixelArt(ARTWORKS);
+assert.equal(artworkPixels.length, 4);
+assert.ok(artworkPixels.every((pixels) => pixels.length === 3339));
+assert.ok(artworkPixels.every((pixels) => pixels.every((pixel) => PALETTE.includes(pixel))));
+assert.equal(transitionDelayFor(2, 21, 8), transitionDelayFor(2, 21, 8));
+assert.notEqual(transitionDelayFor(2, 21, 8), transitionDelayFor(3, 21, 8));
 
-const partialWeeks = Array.from({ length: 53 }, (_, index) => ({
-  contributionDays: index === 0 ? [{ contributionCount: 2, contributionLevel: 'SECOND_QUARTILE', date: '2026-01-01', weekday: 4 }] : [],
-}));
-const paddedWeeks = normalizeWeeks(partialWeeks);
-assert.equal(paddedWeeks.length, 53);
-assert.ok(paddedWeeks.every((week) => week.length === 7));
-assert.deepEqual(paddedWeeks[0][4], { count: 2, date: '2026-01-01', level: 2, weekday: 4 });
-assert.equal(paddedWeeks[0][0].count, 0);
-
-const smallCalendar = [
-  [
-    { date: 'a', count: 2, level: 2, weekday: 0 },
-    { date: 'b', count: 0, level: 0, weekday: 1 },
-    { date: 'x', count: 0, level: 0, weekday: 2 },
-    { date: 'c', count: 9, level: 4, weekday: 3 },
-  ],
-  [
-    { date: 'd', count: 4, level: 3, weekday: 0 },
-    { date: 'e', count: 7, level: 4, weekday: 1 },
-    { date: 'f', count: 0, level: 0, weekday: 2 },
-    { date: 'g', count: 0, level: 0, weekday: 3 },
-  ],
-];
-const topology = buildContributionTopology(smallCalendar, { weeks: 2, days: 4 });
-assert.equal(topology.components.length, 2);
-const connectedComponent = topology.components.find((component) => component.root.date === 'e');
-assert.ok(connectedComponent);
-assert.equal(connectedComponent.members.length, 3);
-assert.ok(topology.bridges.some((edge) => edge.from.date === 'e' && edge.to.date === 'd'));
-assert.ok(topology.bridges.every((edge) => edge.from.count > 0 && edge.to.count > 0));
-assert.equal(topology.distanceByCoordinate.get('0,1'), 1);
-
-const calendar = Array.from({ length: 53 }, (_, week) =>
-  Array.from({ length: 7 }, (_, weekday) => ({
-    date: week === 0 && weekday === 0 ? '2026-01-01' : `2026-${String(week + 1).padStart(2, '0')}-${String(weekday + 1).padStart(2, '0')}`,
-    count: week === 0 && weekday === 0 ? 0 : 4,
-    level: week === 0 && weekday === 0 ? 0 : week === 0 && weekday === 1 ? 1 : 4,
-    weekday,
-  }))
-);
-const svg = buildAnimatedSvg({ data: calendar, themeName: 'dark', profileName: 'Timsy' });
-assert.match(svg, /id="calling-of-saint-matthew-mosaic"/);
+const svg = buildAnimatedSvg({ themeName: 'dark', profileName: 'Timsy' });
 assert.match(svg, /viewBox="0 0 159 21"/);
-assert.equal((svg.match(/class="matthew-pixel"/g) || []).length, 3339);
-assert.equal((svg.match(/class="matthew-pixel"[^>]*width="1" height="1"/g) || []).length, 3339);
-assert.equal((svg.match(/data-subpixel="[0-2],[0-2]"/g) || []).length, 3339);
-assert.match(svg, /data-date="2026-01-01" data-count="0" data-level="0"/);
-assert.match(svg, /dur="18s"/);
-assert.match(svg, /begin="0s"/);
+assert.match(svg, /id="baroque-pixel-carousel"/);
+assert.match(svg, /data-artworks="calling-of-saint-matthew,denial-of-saint-peter,jewish-bride,syndics"/);
+assert.equal((svg.match(/class="baroque-pixel"/g) || []).length, 3339);
+assert.equal((svg.match(/class="baroque-pixel"[^>]*width="1" height="1"/g) || []).length, 3339);
+assert.match(svg, /dur="56s"/);
+assert.doesNotMatch(svg, /matthew-pixel|contribution-day|contribution-cell-frame|pulse-bridge|contribution-root-halo/i);
 assert.doesNotMatch(svg, /<(?:image|filter|script|path|circle|ellipse)\b/);
-assert.doesNotMatch(svg, /data:image\/png;base64|spirit-vein|terraria|smoke-actor|contribution-cell-frame|pulse-bridge|contribution-root-halo/i);
 
-for (const filename of [
-  'TTTimsy-contribution-animation.svg',
-  'TTTimsy-contribution-animation-dark.svg',
-]) {
+for (const filename of ['TTTimsy-contribution-animation.svg', 'TTTimsy-contribution-animation-dark.svg']) {
   const artifact = fs.readFileSync(path.join(__dirname, '..', filename), 'utf8');
-  assert.match(artifact, /id="calling-of-saint-matthew-mosaic"/);
-  assert.equal((artifact.match(/class="matthew-pixel"/g) || []).length, 3339);
-  assert.doesNotMatch(artifact, /data:image\/png;base64|spirit-vein|terraria/i);
+  assert.match(artifact, /id="baroque-pixel-carousel"/);
+  assert.match(artifact, /dur="56s"/);
+  assert.equal((artifact.match(/class="baroque-pixel"/g) || []).length, 3339);
+  assert.doesNotMatch(artifact, /matthew-pixel|contribution-cell-frame|pulse-bridge|contribution-root-halo/i);
 }
 
-console.log('Calling of Saint Matthew SVG checks passed.');
+console.log('Baroque pixel carousel SVG checks passed.');

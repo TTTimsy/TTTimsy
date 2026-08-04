@@ -1,11 +1,16 @@
 name: Generate Contribution Animation
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'picture.png'
+      - 'assets/baroque/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/generate-contribution-animation.yml'
 
 permissions:
   contents: write
@@ -32,7 +37,6 @@ jobs:
       - name: Generate animated SVGs
         run: node scripts/generate-spirit-vein-svg.cjs
         env:
-          GITHUB_TOKEN: ${{ secrets.CONTRIBUTION_READ_TOKEN }}
           CONTRIBUTION_USERNAME: ${{ github.repository_owner }}
 
       - name: Commit and push updated SVGs
