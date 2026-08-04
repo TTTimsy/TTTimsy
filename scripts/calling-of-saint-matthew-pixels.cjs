@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { PNG } = require('pngjs');
+const { buildContributionTopology } = require('./contribution-pulse-topology.cjs');
 
 const TARGET_WEEKS = 53;
 const DAYS_PER_WEEK = 7;
@@ -7,10 +8,10 @@ const SUBPIXELS_PER_DAY = 3;
 const TARGET_COLUMNS = TARGET_WEEKS * SUBPIXELS_PER_DAY;
 const TARGET_ROWS = DAYS_PER_WEEK * SUBPIXELS_PER_DAY;
 const FOCAL_Y = 0.36;
-const REVEAL_SECONDS = 10;
+const REVEAL_SECONDS = 16;
 const HOLD_SECONDS = 4;
 const RETURN_SECONDS = 4;
-const CYCLE_SECONDS = REVEAL_SECONDS + HOLD_SECONDS + RETURN_SECONDS;
+const CYCLE_SECONDS = 24;
 const PIXEL_TRANSITION_SECONDS = 0.25;
 const LAST_REVEAL_DELAY = REVEAL_SECONDS - PIXEL_TRANSITION_SECONDS;
 const PALETTE = [
@@ -102,23 +103,32 @@ function buildContributionMosaic({ data, pixelArt }) {
     throw new Error(`Expected ${TARGET_COLUMNS * TARGET_ROWS} source pixels.`);
   }
 
+  const topology = buildContributionTopology(data);
+  const recordByCoordinate = new Map(topology.components.flatMap((component) => component.members.map((member) => [member.coordinate, component])));
+  const frames = [];
   const markup = data.map((week, weekIndex) => week.map((day, weekday) => {
     const level = Math.min(4, Math.max(0, Number(day.level) || 0));
+    frames.push(`<rect class="contribution-cell-frame" x="${weekIndex * 3}" y="${weekday * 3}" width="3" height="3" fill="none" stroke="#794a25" stroke-width="0.18" opacity="0.8" />`);
     const pixels = [];
     for (let subY = 0; subY < SUBPIXELS_PER_DAY; subY += 1) {
       for (let subX = 0; subX < SUBPIXELS_PER_DAY; subX += 1) {
         const finalColor = pixelArt[(weekday * SUBPIXELS_PER_DAY + subY) * TARGET_COLUMNS + weekIndex * SUBPIXELS_PER_DAY + subX];
         const initialColor = initialColorForLevel(finalColor, level);
-        const delay = animationDelayFor(day.date, subX, subY);
+        const component = recordByCoordinate.get(`${weekIndex},${weekday}`);
+        const depth = component?.depthByCoordinate.get(`${weekIndex},${weekday}`) || 0;
+        const distance = topology.distanceByCoordinate.get(`${weekIndex},${weekday}`);
+        const delay = level ? 3 + depth * 0.72 + animationDelayFor(day.date, subX, subY) * 0.018 : 11 + Math.min(4.7, distance * 0.42) + animationDelayFor(day.date, subX, subY) * 0.012;
         const revealStart = (delay / CYCLE_SECONDS).toFixed(4);
         const revealEnd = ((delay + PIXEL_TRANSITION_SECONDS) / CYCLE_SECONDS).toFixed(4);
-        const returnStart = ((REVEAL_SECONDS + HOLD_SECONDS + delay / LAST_REVEAL_DELAY * (RETURN_SECONDS - PIXEL_TRANSITION_SECONDS)) / CYCLE_SECONDS).toFixed(4);
+        const returnStart = ((20 + (1 - Math.min(1, delay / 16)) * 3.75) / CYCLE_SECONDS).toFixed(4);
         pixels.push(`<rect class="matthew-pixel" data-subpixel="${subX},${subY}" x="${weekIndex * SUBPIXELS_PER_DAY + subX}" y="${weekday * SUBPIXELS_PER_DAY + subY}" width="1" height="1" fill="${initialColor}"><animate attributeName="fill" values="${initialColor};${initialColor};${finalColor};${finalColor};${initialColor}" keyTimes="0;${revealStart};${revealEnd};${returnStart};1" dur="${CYCLE_SECONDS}s" begin="0s" repeatCount="indefinite" /></rect>`);
       }
     }
     return `<g class="contribution-day" data-date="${escapeXml(day.date)}" data-count="${Number(day.count) || 0}" data-level="${level}"><title>${escapeXml(`${day.date}: ${Number(day.count) || 0} contributions`)}</title>${pixels.join('')}</g>`;
   }).join('')).join('');
-  return `<g id="calling-of-saint-matthew-mosaic">${markup}</g>`;
+  const bridges = topology.bridges.slice(0, 1000).map(({ from, to }) => `<rect class="pulse-bridge" x="${Math.min(from.weekIndex, to.weekIndex) * 3 + 1}" y="${Math.min(from.weekday, to.weekday) * 3 + 1}" width="${Math.abs(from.weekIndex - to.weekIndex) * 3 + 1}" height="${Math.abs(from.weekday - to.weekday) * 3 + 1}" fill="#edd08a" opacity="0.15"><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.14;0.28;0.42;1" dur="24s" begin="0s" repeatCount="indefinite" /></rect>`).join('');
+  const halos = topology.components.map(({ root }) => `<g class="contribution-root-halo"><rect x="${root.weekIndex * 3 - 0.35}" y="${root.weekday * 3 - 0.35}" width="3.7" height="3.7" fill="none" stroke="#f0bf72" stroke-width="0.3"><animate attributeName="opacity" values="0.25;1;0.25" dur="24s" begin="0s" repeatCount="indefinite" /></rect></g>`).join('');
+  return `<g id="contribution-cell-frames">${frames.join('')}</g><g id="contribution-pulse-bridges">${bridges}</g><g id="calling-of-saint-matthew-mosaic">${markup}</g><g id="contribution-root-halos">${halos}</g>`;
 }
 
 function loadPixelArt(sourcePath) {
