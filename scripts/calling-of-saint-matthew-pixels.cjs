@@ -86,6 +86,41 @@ function animationDelayFor(date, subpixelX, subpixelY) {
   return (hash32(`${date}:${subpixelX}:${subpixelY}`) % 10000) / 10000 * LAST_REVEAL_DELAY;
 }
 
+function escapeXml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function buildContributionMosaic({ data, pixelArt }) {
+  if (data.length !== TARGET_WEEKS || data.some((week) => week.length !== DAYS_PER_WEEK)) {
+    throw new Error(`Expected a ${TARGET_WEEKS}x${DAYS_PER_WEEK} contribution calendar.`);
+  }
+  if (pixelArt.length !== TARGET_COLUMNS * TARGET_ROWS) {
+    throw new Error(`Expected ${TARGET_COLUMNS * TARGET_ROWS} source pixels.`);
+  }
+
+  const markup = data.map((week, weekIndex) => week.map((day, weekday) => {
+    const level = Math.min(4, Math.max(0, Number(day.level) || 0));
+    const pixels = [];
+    for (let subY = 0; subY < SUBPIXELS_PER_DAY; subY += 1) {
+      for (let subX = 0; subX < SUBPIXELS_PER_DAY; subX += 1) {
+        const finalColor = pixelArt[(weekday * SUBPIXELS_PER_DAY + subY) * TARGET_COLUMNS + weekIndex * SUBPIXELS_PER_DAY + subX];
+        const initialColor = initialColorForLevel(finalColor, level);
+        const delay = animationDelayFor(day.date, subX, subY);
+        const revealStart = (delay / CYCLE_SECONDS).toFixed(4);
+        const revealEnd = ((delay + PIXEL_TRANSITION_SECONDS) / CYCLE_SECONDS).toFixed(4);
+        const returnStart = ((REVEAL_SECONDS + HOLD_SECONDS + delay / LAST_REVEAL_DELAY * (RETURN_SECONDS - PIXEL_TRANSITION_SECONDS)) / CYCLE_SECONDS).toFixed(4);
+        pixels.push(`<rect class="matthew-pixel" data-subpixel="${subX},${subY}" x="${weekIndex * SUBPIXELS_PER_DAY + subX}" y="${weekday * SUBPIXELS_PER_DAY + subY}" width="1" height="1" fill="${initialColor}"><animate attributeName="fill" values="${initialColor};${initialColor};${finalColor};${finalColor};${initialColor}" keyTimes="0;${revealStart};${revealEnd};${returnStart};1" dur="${CYCLE_SECONDS}s" begin="0s" repeatCount="indefinite" /></rect>`);
+      }
+    }
+    return `<g class="contribution-day" data-date="${escapeXml(day.date)}" data-count="${Number(day.count) || 0}" data-level="${level}"><title>${escapeXml(`${day.date}: ${Number(day.count) || 0} contributions`)}</title>${pixels.join('')}</g>`;
+  }).join('')).join('');
+  return `<g id="calling-of-saint-matthew-mosaic">${markup}</g>`;
+}
+
 function loadPixelArt(sourcePath) {
   const image = PNG.sync.read(fs.readFileSync(sourcePath));
   if (!image?.width || !image?.height || !image?.data || image.data.length !== image.width * image.height * 4) {
@@ -130,5 +165,7 @@ module.exports = {
   mixHex,
   initialColorForLevel,
   animationDelayFor,
+  escapeXml,
+  buildContributionMosaic,
   loadPixelArt,
 };
