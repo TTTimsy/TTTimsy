@@ -1,0 +1,91 @@
+const fs = require('fs');
+const { PNG } = require('pngjs');
+
+const TARGET_WEEKS = 53;
+const DAYS_PER_WEEK = 7;
+const SUBPIXELS_PER_DAY = 3;
+const TARGET_COLUMNS = TARGET_WEEKS * SUBPIXELS_PER_DAY;
+const TARGET_ROWS = DAYS_PER_WEEK * SUBPIXELS_PER_DAY;
+const FOCAL_Y = 0.36;
+const PALETTE = [
+  '#090706', '#16100c', '#2b1b12', '#432918',
+  '#5d3a20', '#794a25', '#965f2c', '#b77a38',
+  '#d29a4e', '#edd08a', '#3d1e0f', '#6a2117',
+  '#98351f', '#bd5730', '#d67c43', '#f0bf72',
+];
+
+function clamp(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
+
+function cropBounds(width, height) {
+  const cropHeight = width * TARGET_ROWS / TARGET_COLUMNS;
+  if (width < TARGET_COLUMNS || height < cropHeight) {
+    throw new Error(`Source image is too small for a ${TARGET_COLUMNS}x${TARGET_ROWS} pixel crop.`);
+  }
+
+  return {
+    left: 0,
+    top: clamp(Math.round(height * FOCAL_Y - cropHeight / 2), 0, height - cropHeight),
+    width,
+    height: cropHeight,
+  };
+}
+
+function parseHex(color) {
+  return [
+    Number.parseInt(color.slice(1, 3), 16),
+    Number.parseInt(color.slice(3, 5), 16),
+    Number.parseInt(color.slice(5, 7), 16),
+  ];
+}
+
+function squaredDistance(color, red, green, blue) {
+  const [paletteRed, paletteGreen, paletteBlue] = parseHex(color);
+  return (paletteRed - red) ** 2 + (paletteGreen - green) ** 2 + (paletteBlue - blue) ** 2;
+}
+
+function nearestPaletteColor(red, green, blue) {
+  return PALETTE.reduce(
+    (best, color) => (squaredDistance(color, red, green, blue) < squaredDistance(best, red, green, blue) ? color : best),
+    PALETTE[0]
+  );
+}
+
+function loadPixelArt(sourcePath) {
+  const image = PNG.sync.read(fs.readFileSync(sourcePath));
+  if (!image?.width || !image?.height || !image?.data || image.data.length !== image.width * image.height * 4) {
+    throw new Error(`Unable to decode RGBA pixels from ${sourcePath}`);
+  }
+
+  let crop;
+  try {
+    crop = cropBounds(image.width, image.height);
+  } catch (error) {
+    throw new Error(`${error.message} (${sourcePath})`);
+  }
+
+  const pixels = [];
+  for (let y = 0; y < TARGET_ROWS; y += 1) {
+    for (let x = 0; x < TARGET_COLUMNS; x += 1) {
+      const sourceX = clamp(Math.floor(crop.left + (x + 0.5) * crop.width / TARGET_COLUMNS), 0, image.width - 1);
+      const sourceY = clamp(Math.floor(crop.top + (y + 0.5) * crop.height / TARGET_ROWS), 0, image.height - 1);
+      const offset = (sourceY * image.width + sourceX) * 4;
+      pixels.push(nearestPaletteColor(image.data[offset], image.data[offset + 1], image.data[offset + 2]));
+    }
+  }
+
+  return pixels;
+}
+
+module.exports = {
+  TARGET_WEEKS,
+  DAYS_PER_WEEK,
+  SUBPIXELS_PER_DAY,
+  TARGET_COLUMNS,
+  TARGET_ROWS,
+  PALETTE,
+  cropBounds,
+  nearestPaletteColor,
+  loadPixelArt,
+};
