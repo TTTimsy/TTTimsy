@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install generator dependencies
+        run: npm ci
+
       - name: Generate animated SVGs
         run: node scripts/generate-spirit-vein-svg.cjs
         env:

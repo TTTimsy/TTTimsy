@@ -1,0 +1,12 @@
+{
+  "name": "tttimsy-profile",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "generate": "node scripts/generate-spirit-vein-svg.cjs",
+    "test": "node tests/verify_calling_of_saint_matthew_animation.cjs"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}
