@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "generate": "node scripts/generate-spirit-vein-svg.cjs",
-    "test": "node tests/verify_calling_of_saint_matthew_animation.cjs"
+    "test": "node tests/verify_calling_of_saint_matthew_animation.cjs && node tests/verify_daily_animation_sentinel.cjs"
   },
   "dependencies": {
     "jpeg-js": "^0.4.4",
