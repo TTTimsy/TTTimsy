@@ -83,3 +83,37 @@ Expected: both `TTTimsy-contribution-animation.svg` and `TTTimsy-contribution-an
 Run: `npm test; git diff --check; git status --short`
 
 Expected: test output is `Baroque pixel carousel SVG checks passed.`, `git diff --check` emits no errors, and status lists only the intended generator, test, documentation, and SVG changes.
+
+### Task 4: Promote reviewed outputs to the immutable benchmark
+
+**Files:**
+- Modify: `benchmark/TTTimsy-contribution-animation.svg`
+- Modify: `benchmark/TTTimsy-contribution-animation-dark.svg`
+- Modify: `benchmark/manifest.json`
+
+- [ ] **Step 1: Verify the regenerated root SVGs differ by theme**
+
+Run: `npm test`
+
+Expected: both verification suites pass and the theme-aware test confirms light and dark markup differs.
+
+- [ ] **Step 2: Copy only the reviewed root outputs to benchmark and refresh hashes**
+
+```powershell
+Copy-Item TTTimsy-contribution-animation.svg benchmark/TTTimsy-contribution-animation.svg -Force
+Copy-Item TTTimsy-contribution-animation-dark.svg benchmark/TTTimsy-contribution-animation-dark.svg -Force
+node -e "const c=require('node:crypto'),f=require('node:fs'),p=require('node:path');const n=['TTTimsy-contribution-animation.svg','TTTimsy-contribution-animation-dark.svg'];const files=Object.fromEntries(n.map(x=>[x,c.createHash('sha256').update(f.readFileSync(p.join('benchmark',x),'utf8').replace(/\r\n/g,'\n')).digest('hex')]));f.writeFileSync('benchmark/manifest.json',JSON.stringify({files},null,2)+'\n')"
+```
+
+- [ ] **Step 3: Verify the sentinel accepts the new immutable source**
+
+Run: `node -e "const s=require('./scripts/daily-animation-sentinel.cjs'); console.log(Object.keys(s.verifyBenchmark(process.cwd())).join(','))"`
+
+Expected: both animation filenames print and the command exits 0.
+
+- [ ] **Step 4: Commit the complete upgrade**
+
+```bash
+git add TTTimsy-contribution-animation.svg TTTimsy-contribution-animation-dark.svg benchmark scripts/calling-of-saint-matthew-pixels.cjs scripts/generate-spirit-vein-svg.cjs tests/verify_calling_of_saint_matthew_animation.cjs
+git commit -m "feat: add theme-aware baroque palette"
+```
