@@ -68,3 +68,8 @@ README 的标记内容采用暖金色、深酒红色、棕色和低饱和米色�
 - 不尝试阻止仓库管理员手工修改 benchmark；其不可变性是自动化策略与代码审查边界，而非对管理员的权限限制。
 - 不承诺 Contribution 图的即时刷新，也不把它作为唯一成功判定。
 - 不修改动画生成器或现有动画设计；守护机制只复制已批准的 benchmark。
+
+## Compact status card
+
+The generated status card contains no prose in any language. It shows only the maintenance progress, expected commit count, progress dots, and a state icon: a warm-gold shield for normal operation or a vermilion warning triangle after automatic restoration. The SVG aria-label remains English for accessibility.
+
