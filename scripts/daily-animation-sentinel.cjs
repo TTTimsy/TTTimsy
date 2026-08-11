@@ -35,7 +35,7 @@ function decideMaintenance(state, now) {
 }
 
 function sha256(value) {
-  return crypto.createHash('sha256').update(value).digest('hex');
+  return crypto.createHash('sha256').update(value.replace(/\r\n/g, '\n')).digest('hex');
 }
 
 function verifyBenchmark(root) {

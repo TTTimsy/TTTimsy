@@ -44,6 +44,8 @@ fs.writeFileSync(path.join(tempRoot, 'TTTimsy-contribution-animation-dark.svg'),
 assert.deepEqual(verifyBenchmark(tempRoot), files);
 assert.deepEqual(restoreAnimations(tempRoot), { drifted: true, restored: true });
 assert.equal(fs.readFileSync(path.join(tempRoot, 'TTTimsy-contribution-animation.svg'), 'utf8'), files['TTTimsy-contribution-animation.svg']);
+fs.writeFileSync(path.join(benchmarkDir, 'TTTimsy-contribution-animation.svg'), files['TTTimsy-contribution-animation.svg'].replace(/\n/g, '\r\n'));
+assert.doesNotThrow(() => verifyBenchmark(tempRoot));
 const badManifest = path.join(benchmarkDir, 'manifest.json');
 fs.writeFileSync(badManifest, JSON.stringify({ files: { ...JSON.parse(fs.readFileSync(badManifest, 'utf8')).files, 'TTTimsy-contribution-animation.svg': '0'.repeat(64) } }));
 assert.throws(() => verifyBenchmark(tempRoot), /benchmark hash mismatch/);
