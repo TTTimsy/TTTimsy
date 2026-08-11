@@ -19,7 +19,10 @@ assert.ok(artworkPixels.every((pixels) => pixels.every((pixel) => PALETTE.includ
 assert.equal(transitionDelayFor(2, 21, 8), transitionDelayFor(2, 21, 8));
 assert.notEqual(transitionDelayFor(2, 21, 8), transitionDelayFor(3, 21, 8));
 
-const svg = buildAnimatedSvg({ themeName: 'dark', profileName: 'Timsy' });
+const lightSvg = buildAnimatedSvg({ themeName: 'light', profileName: 'Timsy' });
+const darkSvg = buildAnimatedSvg({ themeName: 'dark', profileName: 'Timsy' });
+assert.notEqual(lightSvg, darkSvg);
+const svg = darkSvg;
 assert.match(svg, /viewBox="0 0 159 21"/);
 assert.match(svg, /id="baroque-pixel-carousel"/);
 assert.match(svg, /data-artworks="calling-of-saint-matthew,denial-of-saint-peter,jewish-bride,syndics"/);
@@ -36,5 +39,9 @@ for (const filename of ['TTTimsy-contribution-animation.svg', 'TTTimsy-contribut
   assert.equal((artifact.match(/class="baroque-pixel"/g) || []).length, 3339);
   assert.doesNotMatch(artifact, /matthew-pixel|contribution-cell-frame|pulse-bridge|contribution-root-halo/i);
 }
+
+const lightArtifact = fs.readFileSync(path.join(__dirname, '..', 'TTTimsy-contribution-animation.svg'), 'utf8');
+const darkArtifact = fs.readFileSync(path.join(__dirname, '..', 'TTTimsy-contribution-animation-dark.svg'), 'utf8');
+assert.notEqual(lightArtifact, darkArtifact);
 
 console.log('Baroque pixel carousel SVG checks passed.');

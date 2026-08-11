@@ -15,6 +15,7 @@ const CYCLE_SECONDS = SEGMENT_SECONDS * 4;
 const PIXEL_TRANSITION_SECONDS = 0.25;
 const LAST_REVEAL_DELAY = TRANSITION_SECONDS - PIXEL_TRANSITION_SECONDS;
 const PALETTE = ['#090706', '#16100c', '#2b1b12', '#432918', '#5d3a20', '#794a25', '#965f2c', '#b77a38', '#d29a4e', '#edd08a', '#3d1e0f', '#6a2117', '#98351f', '#bd5730', '#d67c43', '#f0bf72'];
+const DARK_PALETTE = ['#120f0d', '#211914', '#35251d', '#4c3424', '#67462e', '#845b38', '#a87543', '#cc9653', '#e2b86a', '#ffe0a0', '#542819', '#7b3422', '#aa4a2b', '#d16e3c', '#ea9655', '#ffd18e'];
 
 function clamp(value, minimum, maximum) { return Math.min(maximum, Math.max(minimum, value)); }
 
@@ -26,7 +27,7 @@ function cropBounds(width, height, focalY = FOCAL_Y) {
 
 function parseHex(color) { return [Number.parseInt(color.slice(1, 3), 16), Number.parseInt(color.slice(3, 5), 16), Number.parseInt(color.slice(5, 7), 16)]; }
 function squaredDistance(color, red, green, blue) { const [r, g, b] = parseHex(color); return (r - red) ** 2 + (g - green) ** 2 + (b - blue) ** 2; }
-function nearestPaletteColor(red, green, blue) { return PALETTE.reduce((best, color) => squaredDistance(color, red, green, blue) < squaredDistance(best, red, green, blue) ? color : best, PALETTE[0]); }
+function nearestPaletteColor(red, green, blue, palette = PALETTE) { return palette.reduce((best, color) => squaredDistance(color, red, green, blue) < squaredDistance(best, red, green, blue) ? color : best, palette[0]); }
 
 function hash32(value) {
   let hash = 0x811c9dc5;
@@ -42,7 +43,7 @@ function decodeImage(sourcePath) {
   return /\.jpe?g$/i.test(sourcePath) ? jpeg.decode(bytes, { useTArray: true, maxMemoryUsageInMB: 1024 }) : PNG.sync.read(bytes);
 }
 
-function loadPixelArt(sourcePath, focalY = FOCAL_Y) {
+function loadPixelArt(sourcePath, focalY = FOCAL_Y, palette = PALETTE) {
   const image = decodeImage(sourcePath);
   if (!image?.width || !image?.height || !image?.data || image.data.length !== image.width * image.height * 4) throw new Error(`Unable to decode RGBA pixels from ${sourcePath}`);
   const crop = cropBounds(image.width, image.height, focalY);
@@ -51,13 +52,13 @@ function loadPixelArt(sourcePath, focalY = FOCAL_Y) {
     const sourceX = clamp(Math.floor(crop.left + (x + 0.5) * crop.width / TARGET_COLUMNS), 0, image.width - 1);
     const sourceY = clamp(Math.floor(crop.top + (y + 0.5) * crop.height / TARGET_ROWS), 0, image.height - 1);
     const offset = (sourceY * image.width + sourceX) * 4;
-    pixels.push(nearestPaletteColor(image.data[offset], image.data[offset + 1], image.data[offset + 2]));
+    pixels.push(nearestPaletteColor(image.data[offset], image.data[offset + 1], image.data[offset + 2], palette));
   }
   return pixels;
 }
 
-function loadArtworkPixelArt(artworks) {
-  return artworks.map(({ id, sourcePath, focalY }) => { try { return loadPixelArt(sourcePath, focalY); } catch (error) { throw new Error(`Unable to sample ${id}: ${error.message}`); } });
+function loadArtworkPixelArt(artworks, palette = PALETTE) {
+  return artworks.map(({ id, sourcePath, focalY }) => { try { return loadPixelArt(sourcePath, focalY, palette); } catch (error) { throw new Error(`Unable to sample ${id}: ${error.message}`); } });
 }
 
 function buildBaroqueMosaic({ artworks, artworkPixels }) {
@@ -73,4 +74,4 @@ function buildBaroqueMosaic({ artworks, artworkPixels }) {
   return `<g id="baroque-pixel-carousel" data-artworks="${escapeXml(artworks.map(({ id }) => id).join(','))}">${pixels.join('')}</g>`;
 }
 
-module.exports = { TARGET_WEEKS, DAYS_PER_WEEK, SUBPIXELS_PER_DAY, TARGET_COLUMNS, TARGET_ROWS, PALETTE, TRANSITION_SECONDS, HOLD_SECONDS, SEGMENT_SECONDS, CYCLE_SECONDS, PIXEL_TRANSITION_SECONDS, LAST_REVEAL_DELAY, cropBounds, nearestPaletteColor, transitionDelayFor, escapeXml, loadPixelArt, loadArtworkPixelArt, buildBaroqueMosaic };
+module.exports = { TARGET_WEEKS, DAYS_PER_WEEK, SUBPIXELS_PER_DAY, TARGET_COLUMNS, TARGET_ROWS, PALETTE, DARK_PALETTE, TRANSITION_SECONDS, HOLD_SECONDS, SEGMENT_SECONDS, CYCLE_SECONDS, PIXEL_TRANSITION_SECONDS, LAST_REVEAL_DELAY, cropBounds, nearestPaletteColor, transitionDelayFor, escapeXml, loadPixelArt, loadArtworkPixelArt, buildBaroqueMosaic };

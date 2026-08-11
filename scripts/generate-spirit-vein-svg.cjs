@@ -2,13 +2,14 @@
 
 const fs = require('fs');
 const { ARTWORKS } = require('./baroque-artworks.cjs');
-const { buildBaroqueMosaic, escapeXml, loadArtworkPixelArt } = require('./calling-of-saint-matthew-pixels.cjs');
+const { PALETTE, DARK_PALETTE, buildBaroqueMosaic, escapeXml, loadArtworkPixelArt } = require('./calling-of-saint-matthew-pixels.cjs');
 
 function resolveUsername() { return (process.env.CONTRIBUTION_USERNAME && process.env.CONTRIBUTION_USERNAME.trim()) || (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY.split('/')[0]) || 'TTTimsy'; }
 
 function buildAnimatedSvg({ themeName, profileName = 'GitHub user' }) {
   if (!['light', 'dark'].includes(themeName)) throw new Error(`Unknown theme: ${themeName}`);
-  const mosaic = buildBaroqueMosaic({ artworks: ARTWORKS, artworkPixels: loadArtworkPixelArt(ARTWORKS) });
+  const palette = themeName === 'dark' ? DARK_PALETTE : PALETTE;
+  const mosaic = buildBaroqueMosaic({ artworks: ARTWORKS, artworkPixels: loadArtworkPixelArt(ARTWORKS, palette) });
   const label = `${profileName} Baroque pixel carousel`;
   return `<?xml version="1.0" encoding="UTF-8"?>\n<svg width="100%" viewBox="0 0 159 21" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label)}" shape-rendering="crispEdges"><title>${escapeXml(label)}</title><desc>Four Baroque paintings overwrite one another in a repeating pixel animation.</desc>${mosaic}</svg>\n`;
 }
