@@ -58,9 +58,12 @@ function restoreAnimations(root) {
 function renderStatusSvg(state) {
   const warning = state.alert;
   const accent = warning ? '#d94841' : '#d8a657';
-  const message = warning ? '发现偏差 · 已覆写恢复' : '基准守护运行中';
-  const dots = Array.from({ length: state.planned }, (_, index) => `<circle cx="${34 + index * 14}" cy="105" r="4" fill="${index < state.completed ? accent : '#4a3328'}"/>`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" role="img" aria-label="Animation Sentinel ${state.completed}/${state.planned}"><rect width="760" height="130" rx="18" fill="#1d1411"/><rect x="14" y="14" width="732" height="102" rx="12" fill="#2b1c17" stroke="${accent}"/><text x="34" y="50" fill="#f2dfb5" font-family="Georgia,serif" font-size="22">Animation Sentinel · 动画守护</text><text x="34" y="82" fill="${accent}" font-family="Georgia,serif" font-size="32">${state.completed} / ${state.planned}</text><text x="180" y="79" fill="#f2dfb5" font-family="Arial,sans-serif" font-size="15">预计提交 ${state.planned + 1} 条 · ${message}</text>${dots}</svg>\n`;
+  const icon = warning
+    ? '<path d="M34 34L52 66H16Z" fill="#d94841"/><text x="34" y="58" text-anchor="middle" fill="#1d1411" font-family="Arial,sans-serif" font-size="20">!</text>'
+    : '<path d="M34 18L52 26V43C52 55 44 65 34 70C24 65 16 55 16 43V26Z" fill="#d8a657"/>';
+  const dots = Array.from({ length: state.planned }, (_, index) => `<circle cx="${90 + index * 14}" cy="105" r="4" fill="${index < state.completed ? accent : '#4a3328'}"/>`).join('');
+  const stateName = warning ? 'alert' : 'normal';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" role="img" aria-label="Animation Sentinel ${state.completed}/${state.planned}" data-state="${stateName}"><rect width="760" height="130" rx="18" fill="#1d1411"/><rect x="14" y="14" width="732" height="102" rx="12" fill="#2b1c17" stroke="${accent}"/>${icon}<text x="78" y="62" fill="${accent}" font-family="Georgia,serif" font-size="30">${state.completed} / ${state.planned}</text><text x="78" y="88" fill="#f2dfb5" font-family="Arial,sans-serif" font-size="15">${state.planned + 1}</text>${dots}</svg>\n`;
 }
 
 function replaceReadmeStatus(readme) {
