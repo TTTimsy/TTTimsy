@@ -59,11 +59,11 @@ function renderStatusSvg(state) {
   const warning = state.alert;
   const accent = warning ? '#d94841' : '#d8a657';
   const icon = warning
-    ? '<path d="M34 34L52 66H16Z" fill="#d94841"/><text x="34" y="58" text-anchor="middle" fill="#1d1411" font-family="Arial,sans-serif" font-size="20">!</text>'
-    : '<path d="M34 18L52 26V43C52 55 44 65 34 70C24 65 16 55 16 43V26Z" fill="#d8a657"/>';
-  const dots = Array.from({ length: state.planned }, (_, index) => `<circle cx="${90 + index * 14}" cy="105" r="4" fill="${index < state.completed ? accent : '#4a3328'}"/>`).join('');
+    ? '<path data-icon="warning" d="M50 48L68 80H32Z" fill="#d94841"/><text x="50" y="72" text-anchor="middle" fill="#1d1411" font-family="Arial,sans-serif" font-size="20">!</text>'
+    : '<path data-icon="shield" d="M50 32L68 40V57C68 69 60 79 50 84C40 79 32 69 32 57V40Z" fill="#d8a657"/>';
+  const dots = Array.from({ length: state.planned }, (_, index) => `<circle cx="${112 + index * 14}" cy="105" r="4" fill="${index < state.completed ? accent : '#4a3328'}"/>`).join('');
   const stateName = warning ? 'alert' : 'normal';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" role="img" aria-label="Animation Sentinel ${state.completed}/${state.planned}" data-state="${stateName}"><rect width="760" height="130" rx="18" fill="#1d1411"/><rect x="14" y="14" width="732" height="102" rx="12" fill="#2b1c17" stroke="${accent}"/>${icon}<text x="78" y="62" fill="${accent}" font-family="Georgia,serif" font-size="30">${state.completed} / ${state.planned}</text><text x="78" y="88" fill="#f2dfb5" font-family="Arial,sans-serif" font-size="15">${state.planned + 1}</text>${dots}</svg>\n`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" role="img" aria-label="Animation Sentinel ${state.completed}/${state.planned}" data-state="${stateName}"><rect width="760" height="130" rx="18" fill="#1d1411"/><rect x="14" y="14" width="732" height="102" rx="12" fill="#2b1c17" stroke="${accent}"/>${icon}<text x="86" y="62" fill="${accent}" font-family="Georgia,serif" font-size="30">${state.completed} / ${state.planned}</text><path data-icon="commit" d="M80 78H96V90H80Z M84 74V78 M92 74V78" fill="none" stroke="#f2dfb5" stroke-width="2"/><text x="102" y="89" fill="#f2dfb5" font-family="Arial,sans-serif" font-size="15">${state.planned + 1}</text>${dots}</svg>\n`;
 }
 
 function replaceReadmeStatus(readme) {
