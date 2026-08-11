@@ -55,6 +55,63 @@ function restoreAnimations(root) {
   return { drifted, restored: true };
 }
 
+function renderStatusSvg(state) {
+  const warning = state.alert;
+  const accent = warning ? '#d94841' : '#d8a657';
+  const message = warning ? '发现偏差 · 已覆写恢复' : '基准守护运行中';
+  const dots = Array.from({ length: state.planned }, (_, index) => `<circle cx="${34 + index * 14}" cy="105" r="4" fill="${index < state.completed ? accent : '#4a3328'}"/>`).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="130" viewBox="0 0 760 130" role="img" aria-label="Animation Sentinel ${state.completed}/${state.planned}"><rect width="760" height="130" rx="18" fill="#1d1411"/><rect x="14" y="14" width="732" height="102" rx="12" fill="#2b1c17" stroke="${accent}"/><text x="34" y="50" fill="#f2dfb5" font-family="Georgia,serif" font-size="22">Animation Sentinel · 动画守护</text><text x="34" y="82" fill="${accent}" font-family="Georgia,serif" font-size="32">${state.completed} / ${state.planned}</text><text x="180" y="79" fill="#f2dfb5" font-family="Arial,sans-serif" font-size="15">预计提交 ${state.planned + 1} 条 · ${message}</text>${dots}</svg>\n`;
+}
+
+function replaceReadmeStatus(readme) {
+  const start = '<!-- animation-sentinel:start -->';
+  const end = '<!-- animation-sentinel:end -->';
+  if (!readme.includes(start) || !readme.includes(end)) throw new Error('README status markers are missing');
+  return readme.replace(new RegExp(`${start}[\\s\\S]*?${end}`), `${start}\n<img src="https://raw.githubusercontent.com/TTTimsy/TTTimsy/main/assets/animation-sentinel-status.svg" alt="Animation Sentinel maintenance status" width="100%" />\n${end}`);
+}
+
+function advanceMaintenance(state, result, timestamp) {
+  return { ...state, completed: state.completed + 1, alert: state.alert || result.drifted, lastMaintainedAt: timestamp };
+}
+
+function parseArgs(args) {
+  const values = {};
+  for (let index = 0; index < args.length; index += 2) {
+    if (!args[index].startsWith('--') || args[index + 1] === undefined) throw new Error('arguments must be --name value pairs');
+    values[args[index].slice(2)] = args[index + 1];
+  }
+  return values;
+}
+
+function runSentinel({ root, now = new Date(), random = Math.random }) {
+  const clock = shanghaiDateHour(now);
+  const statePath = path.join(root, 'automation', 'daily-maintenance-state.json');
+  const previous = fs.existsSync(statePath) ? JSON.parse(fs.readFileSync(statePath, 'utf8')) : null;
+  let state = previous && previous.date === clock.date ? previous : createDailyState(clock.date, random);
+  let action = decideMaintenance(previous || { ...state, date: previous ? previous.date : 'missing' }, clock).kind;
+  if (!previous) action = clock.hour === 0 ? 'initialize' : 'initialize-and-maintain';
+  if (action === 'idle') return { action, state };
+  if (action === 'maintain' || action === 'initialize-and-maintain') state = advanceMaintenance(state, restoreAnimations(root), now.toISOString());
+  fs.mkdirSync(path.dirname(statePath), { recursive: true });
+  fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+  fs.mkdirSync(path.join(root, 'assets'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'assets', 'animation-sentinel-status.svg'), renderStatusSvg(state));
+  fs.writeFileSync(path.join(root, 'README.md'), replaceReadmeStatus(fs.readFileSync(path.join(root, 'README.md'), 'utf8')));
+  return { action, state };
+}
+
+function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const now = args.now ? new Date(args.now) : new Date();
+  if (Number.isNaN(now.valueOf())) throw new Error('invalid --now value');
+  const random = args.random === undefined ? Math.random : () => Number(args.random);
+  const result = runSentinel({ root: args.root ? path.resolve(args.root) : process.cwd(), now, random });
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `action=${result.action}\n`);
+  console.log(JSON.stringify(result));
+}
+
+if (require.main === module) main();
+
 module.exports = {
-  createDailyState, decideMaintenance, restoreAnimations, shanghaiDateHour, verifyBenchmark,
+  advanceMaintenance, createDailyState, decideMaintenance, parseArgs, renderStatusSvg, replaceReadmeStatus, restoreAnimations, runSentinel, shanghaiDateHour, verifyBenchmark,
 };

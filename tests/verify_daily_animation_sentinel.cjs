@@ -6,6 +6,9 @@ const path = require('node:path');
 const {
   createDailyState,
   decideMaintenance,
+  advanceMaintenance,
+  renderStatusSvg,
+  replaceReadmeStatus,
   restoreAnimations,
   shanghaiDateHour,
   verifyBenchmark,
@@ -45,5 +48,18 @@ const badManifest = path.join(benchmarkDir, 'manifest.json');
 fs.writeFileSync(badManifest, JSON.stringify({ files: { ...JSON.parse(fs.readFileSync(badManifest, 'utf8')).files, 'TTTimsy-contribution-animation.svg': '0'.repeat(64) } }));
 assert.throws(() => verifyBenchmark(tempRoot), /benchmark hash mismatch/);
 fs.rmSync(tempRoot, { recursive: true, force: true });
+
+const normal = { date: '2026-08-11', planned: 15, completed: 4, alert: false, lastMaintainedAt: '2026-08-11T01:00:00+08:00' };
+const warning = { ...normal, alert: true };
+assert.match(renderStatusSvg(normal), /#d8a657/);
+assert.match(renderStatusSvg(normal), /4\s*\/\s*15/);
+assert.match(renderStatusSvg(warning), /#d94841/);
+assert.match(renderStatusSvg(warning), /发现偏差 · 已覆写恢复/);
+const readme = '<!-- animation-sentinel:start -->old<!-- animation-sentinel:end -->';
+assert.match(replaceReadmeStatus(readme), /assets\/animation-sentinel-status\.svg/);
+assert.throws(() => replaceReadmeStatus('# no markers'), /status markers/);
+assert.deepEqual(advanceMaintenance(normal, { drifted: true }, '2026-08-11T02:00:00+08:00'), {
+  ...warning, completed: 5, lastMaintainedAt: '2026-08-11T02:00:00+08:00',
+});
 
 console.log('Daily animation sentinel checks passed.');

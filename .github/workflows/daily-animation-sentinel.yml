@@ -1,0 +1,48 @@
+name: Daily Animation Sentinel
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-animation-sentinel
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Restore benchmark and update maintenance evidence
+        id: sentinel
+        run: node scripts/daily-animation-sentinel.cjs
+
+      - name: Commit scheduled maintenance
+        if: steps.sentinel.outputs.action != 'idle'
+        run: |
+          git config user.name "${{ github.repository_owner }} Animation Sentinel"
+          git config user.email "${{ github.repository_owner }}@users.noreply.github.com"
+          git add TTTimsy-contribution-animation.svg TTTimsy-contribution-animation-dark.svg README.md assets/animation-sentinel-status.svg automation/daily-maintenance-state.json
+          git commit --allow-empty -m "chore: animation sentinel maintenance [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            git rebase --abort || true
+            sleep "$attempt"
+          done
+          exit 1
